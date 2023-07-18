@@ -1,10 +1,10 @@
 
 
-![logo](_static/object_detector_logo.png)
+![logo](_static/vtracker_logo.png)
 
 
 
-# **ObjectDetector interface C++ library**
+# **VTracker interface C++ library**
 
 **v1.0.1**
 

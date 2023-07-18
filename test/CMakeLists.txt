@@ -43,4 +43,4 @@ endif()
 ## LINK LIBRARIES
 ## linking all dependencies
 ################################################################################
-target_link_libraries(${PROJECT_NAME} ObjectDetector)
+target_link_libraries(${PROJECT_NAME} VTracker)

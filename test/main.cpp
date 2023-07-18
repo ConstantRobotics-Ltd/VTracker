@@ -1,10 +1,10 @@
 #include <iostream>
-#include "ObjectDetector.h"
+#include "VTracker.h"
 
 
 
-/// Link namesapces.
-using namespace cr::detector;
+// Link namesapces.
+using namespace cr::vtracker;
 using namespace std;
 
 
@@ -31,7 +31,7 @@ int main(void)
 {
     cout << "#####################################" << endl;
     cout << "#                                   #" << endl;
-    cout << "# ObjectDetector test               #" << endl;
+    cout << "# VTracker test                     #" << endl;
     cout << "#                                   #" << endl;
     cout << "#####################################" << endl;
     cout << endl;
@@ -80,54 +80,134 @@ int main(void)
 bool copyTest()
 {
     // Prepare random params.
-    ObjectDetectorParams in;
-    in.logMode = rand() % 255;
+    VTrackerParams in;
+    in.mode = rand() % 255;
+    in.rectX = rand() % 255;
+    in.rectY = rand() % 255;
+    in.rectWidth = rand() % 255;
+    in.rectHeight = rand() % 255;
+    in.objectX = rand() % 255;
+    in.objectY = rand() % 255;
+    in.objectWidth = rand() % 255;
+    in.objectHeight = rand() % 255;
+    in.lostModeFrameCounter = rand() % 255;
+    in.frameCounter = rand() % 255;
+    in.frameWidth = rand() % 255;
+    in.frameHeight = rand() % 255;
+    in.searchWindowWidth = rand() % 255;
+    in.searchWindowHeight = rand() % 255;
+    in.searchWindowX = rand() % 255;
+    in.searchWindowY = rand() % 255;
+    in.lostModeOption = rand() % 255;
     in.frameBufferSize = rand() % 255;
-    in.minObjectWidth = rand() % 255;
-    in.maxObjectWidth = rand() % 255;
-    in.minObjectHeight = rand() % 255;
-    in.maxObjectHeight = rand() % 255;
-    in.minXSpeed = rand() % 255;
-    in.maxXSpeed = rand() % 255;
-    in.minYSpeed = rand() % 255;
-    in.maxYSpeed = rand() % 255;
-    in.xDetectionCriteria = rand() % 255;
-    in.yDetectionCriteria = rand() % 255;
-    in.resetCriteria = rand() % 255;
-    in.sensitivity = rand() % 255;
-    in.scaleFactor = rand() % 255;
-    in.numThreads = rand() % 255;
-    in.processingTimeMks = rand() % 255;
+    in.maxFramesInLostMode = rand() % 255;
+    in.processedFrameId = rand() % 255;
+    in.frameId = rand() % 255;
+    in.velX = rand() % 255;
+    in.velY = rand() % 255;
+    in.detectionProbability = rand() % 255;
+    in.rectAutoSize = rand() % 255;
+    in.rectAutoPosition = rand() % 255;
+    in.multipleThreads = rand() % 255;
+    in.numChannels = rand() % 255;
     in.type = rand() % 255;
-    in.enable = false;
+    in.processingTimeMks = rand() % 255;
     in.custom1 = rand() % 255;
     in.custom2 = rand() % 255;
     in.custom3 = rand() % 255;
-    in.minDetectionProbability = rand() % 255;
-    in.initString = "serfrerferf";
-    in.objects.clear();
-    for (int i = 0; i < 5; ++i)
-    {
-        Object obj;
-        obj.id = rand() % 255;
-        obj.type = rand() % 255;
-        obj.width = rand() % 255;
-        obj.height = rand() % 255;
-        obj.x = rand() % 255;
-        obj.y = rand() % 255;
-        obj.vX = rand() % 255;
-        obj.vY = rand() % 255;
-        obj.p = rand() % 255;
-        in.objects.push_back(obj);
-    }
 
     // Copy params.
-    ObjectDetectorParams out = in;
+    VTrackerParams out = in;
 
     // Compare params.
-    if (in.logMode != out.logMode)
+    if (in.mode != out.mode)
     {
-        cout << "in.logMode" << endl;
+        cout << "in.mode" << endl;
+        return false;
+    }
+    if (in.rectX != out.rectX)
+    {
+        cout << "in.rectX" << endl;
+        return false;
+    }
+    if (in.rectY != out.rectY)
+    {
+        cout << "in.rectY" << endl;
+        return false;
+    }
+    if (in.rectWidth != out.rectWidth)
+    {
+        cout << "in.rectWidth" << endl;
+        return false;
+    }
+    if (in.rectHeight != out.rectHeight)
+    {
+        cout << "in.rectHeight" << endl;
+        return false;
+    }
+    if (in.objectX != out.objectX)
+    {
+        cout << "in.objectX" << endl;
+        return false;
+    }
+    if (in.objectY != out.objectY)
+    {
+        cout << "in.objectY" << endl;
+        return false;
+    }
+    if (in.objectWidth != out.objectWidth)
+    {
+        cout << "in.objectWidth" << endl;
+        return false;
+    }
+    if (in.objectHeight != out.objectHeight)
+    {
+        cout << "in.objectHeight" << endl;
+        return false;
+    }
+    if (in.lostModeFrameCounter != out.lostModeFrameCounter)
+    {
+        cout << "in.lostModeFrameCounter" << endl;
+        return false;
+    }
+    if (in.frameCounter != out.frameCounter)
+    {
+        cout << "in.frameCounter" << endl;
+        return false;
+    }
+    if (in.frameWidth != out.frameWidth)
+    {
+        cout << "in.frameWidth" << endl;
+        return false;
+    }
+    if (in.frameHeight != out.frameHeight)
+    {
+        cout << "in.frameHeight" << endl;
+        return false;
+    }
+    if (in.searchWindowWidth != out.searchWindowWidth)
+    {
+        cout << "in.searchWindowWidth" << endl;
+        return false;
+    }
+    if (in.searchWindowHeight != out.searchWindowHeight)
+    {
+        cout << "in.searchWindowHeight" << endl;
+        return false;
+    }
+    if (in.searchWindowX != out.searchWindowX)
+    {
+        cout << "in.searchWindowX" << endl;
+        return false;
+    }
+    if (in.searchWindowY != out.searchWindowY)
+    {
+        cout << "in.searchWindowY" << endl;
+        return false;
+    }
+    if (in.lostModeOption != out.lostModeOption)
+    {
+        cout << "in.lostModeOption" << endl;
         return false;
     }
     if (in.frameBufferSize != out.frameBufferSize)
@@ -135,79 +215,54 @@ bool copyTest()
         cout << "in.frameBufferSize" << endl;
         return false;
     }
-    if (in.minObjectWidth != out.minObjectWidth)
+    if (in.maxFramesInLostMode != out.maxFramesInLostMode)
     {
-        cout << "in.minObjectWidth" << endl;
+        cout << "in.maxFramesInLostMode" << endl;
         return false;
     }
-    if (in.maxObjectWidth != out.maxObjectWidth)
+    if (in.processedFrameId != out.processedFrameId)
     {
-        cout << "in.maxObjectWidth" << endl;
+        cout << "in.processedFrameId" << endl;
         return false;
     }
-    if (in.minObjectHeight != out.minObjectHeight)
+    if (in.frameId != out.frameId)
     {
-        cout << "in.minObjectHeight" << endl;
+        cout << "in.frameId" << endl;
         return false;
     }
-    if (in.maxObjectHeight != out.maxObjectHeight)
+    if (in.velX != out.velX)
     {
-        cout << "in.maxObjectHeight" << endl;
+        cout << "in.velX" << endl;
         return false;
     }
-    if (in.minXSpeed != out.minXSpeed)
+    if (in.velY != out.velY)
     {
-        cout << "in.minXSpeed" << endl;
+        cout << "in.velY" << endl;
         return false;
     }
-    if (in.maxXSpeed != out.maxXSpeed)
+    if (in.detectionProbability != out.detectionProbability)
     {
-        cout << "in.maxXSpeed" << endl;
+        cout << "in.detectionProbability" << endl;
         return false;
     }
-    if (in.minYSpeed != out.minYSpeed)
+    if (in.rectAutoSize != out.rectAutoSize)
     {
-        cout << "in.minYSpeed" << endl;
+        cout << "in.rectAutoSize" << endl;
         return false;
     }
-    if (in.maxYSpeed != out.maxYSpeed)
+    if (in.rectAutoPosition != out.rectAutoPosition)
     {
-        cout << "in.maxYSpeed" << endl;
+        cout << "in.rectAutoPosition" << endl;
         return false;
     }
-    if (in.xDetectionCriteria != out.xDetectionCriteria)
+    if (in.multipleThreads != out.multipleThreads)
     {
-        cout << "in.xDetectionCriteria" << endl;
+        cout << "in.multipleThreads" << endl;
         return false;
     }
-    if (in.yDetectionCriteria != out.yDetectionCriteria)
+    if (in.numChannels != out.numChannels)
     {
-        cout << "in.yDetectionCriteria" << endl;
-        return false;
-    }
-    if (in.resetCriteria != out.resetCriteria)
-    {
-        cout << "in.resetCriteria" << endl;
-        return false;
-    }
-    if (in.sensitivity != out.sensitivity)
-    {
-        cout << "in.sensitivity" << endl;
-        return false;
-    }
-    if (in.scaleFactor != out.scaleFactor)
-    {
-        cout << "in.scaleFactor" << endl;
-        return false;
-    }
-    if (in.numThreads != out.numThreads)
-    {
-        cout << "in.numThreads" << endl;
-        return false;
-    }
-    if (in.processingTimeMks != out.processingTimeMks)
-    {
-        cout << "in.processingTimeMks" << endl;
+        cout << "in.numChannels" << endl;
         return false;
     }
     if (in.type != out.type)
@@ -215,9 +270,9 @@ bool copyTest()
         cout << "in.type" << endl;
         return false;
     }
-    if (in.enable != out.enable)
+    if (in.processingTimeMks != out.processingTimeMks)
     {
-        cout << "in.enable" << endl;
+        cout << "in.processingTimeMks" << endl;
         return false;
     }
     if (in.custom1 != out.custom1)
@@ -233,64 +288,6 @@ bool copyTest()
     if (in.custom3 != out.custom3)
     {
         cout << "in.custom3" << endl;
-        return false;
-    }
-    if (in.objects.size() != out.objects.size())
-    {
-        cout << "in.objects.size()" << endl;
-        return false;
-    }
-    for (int i = 0; i < in.objects.size(); ++i)
-    {
-        if (in.objects[i].id != out.objects[i].id)
-        {
-            cout << "in.objects[" << i << "].id" << endl;
-            return false;
-        }
-        if (in.objects[i].type != out.objects[i].type)
-        {
-            cout << "in.objects[" << i << "].type" << endl;
-            return false;
-        }
-        if (in.objects[i].width != out.objects[i].width)
-        {
-            cout << "in.objects[" << i << "].width" << endl;
-            return false;
-        }
-        if (in.objects[i].height != out.objects[i].height)
-        {
-            cout << "in.objects[" << i << "].height" << endl;
-            return false;
-        }
-        if (in.objects[i].x != out.objects[i].x)
-        {
-            cout << "in.objects[" << i << "].x" << endl;
-            return false;
-        }
-        if (in.objects[i].y != out.objects[i].y)
-        {
-            cout << "in.objects[" << i << "].y" << endl;
-            return false;
-        }
-        if (in.objects[i].vX != out.objects[i].vX)
-        {
-            cout << "in.objects[" << i << "].vX" << endl;
-            return false;
-        }
-        if (in.objects[i].vY != out.objects[i].vY)
-        {
-            cout << "in.objects[" << i << "].vY" << endl;
-            return false;
-        }
-        if (in.objects[i].p != out.objects[i].p)
-        {
-            cout << "in.objects[" << i << "].p" << endl;
-            return false;
-        }
-    }
-    if (in.initString != out.initString)
-    {
-        cout << "in.in.initString" << endl;
         return false;
     }
 
@@ -303,46 +300,41 @@ bool copyTest()
 bool encodeDecodeTest()
 {
     // Prepare random params.
-    ObjectDetectorParams in;
-    in.logMode = rand() % 255;
+    VTrackerParams in;
+    in.mode = rand() % 255;
+    in.rectX = rand() % 255;
+    in.rectY = rand() % 255;
+    in.rectWidth = rand() % 255;
+    in.rectHeight = rand() % 255;
+    in.objectX = rand() % 255;
+    in.objectY = rand() % 255;
+    in.objectWidth = rand() % 255;
+    in.objectHeight = rand() % 255;
+    in.lostModeFrameCounter = rand() % 255;
+    in.frameCounter = rand() % 255;
+    in.frameWidth = rand() % 255;
+    in.frameHeight = rand() % 255;
+    in.searchWindowWidth = rand() % 255;
+    in.searchWindowHeight = rand() % 255;
+    in.searchWindowX = rand() % 255;
+    in.searchWindowY = rand() % 255;
+    in.lostModeOption = rand() % 255;
     in.frameBufferSize = rand() % 255;
-    in.minObjectWidth = rand() % 255;
-    in.maxObjectWidth = rand() % 255;
-    in.minObjectHeight = rand() % 255;
-    in.maxObjectHeight = rand() % 255;
-    in.minXSpeed = rand() % 255;
-    in.maxXSpeed = rand() % 255;
-    in.minYSpeed = rand() % 255;
-    in.maxYSpeed = rand() % 255;
-    in.xDetectionCriteria = rand() % 255;
-    in.yDetectionCriteria = rand() % 255;
-    in.resetCriteria = rand() % 255;
-    in.sensitivity = rand() % 255;
-    in.scaleFactor = rand() % 255;
-    in.numThreads = rand() % 255;
-    in.processingTimeMks = rand() % 255;
+    in.maxFramesInLostMode = rand() % 255;
+    in.processedFrameId = rand() % 255;
+    in.frameId = rand() % 255;
+    in.velX = rand() % 255;
+    in.velY = rand() % 255;
+    in.detectionProbability = rand() % 255;
+    in.rectAutoSize = rand() % 255;
+    in.rectAutoPosition = rand() % 255;
+    in.multipleThreads = rand() % 255;
+    in.numChannels = rand() % 255;
     in.type = rand() % 255;
-    in.enable = false;
+    in.processingTimeMks = rand() % 255;
     in.custom1 = rand() % 255;
     in.custom2 = rand() % 255;
     in.custom3 = rand() % 255;
-    in.minDetectionProbability = rand() % 255;
-    in.initString = "alsjfhkjlkjsa";
-    in.objects.clear();
-    for (int i = 0; i < 5; ++i)
-    {
-        Object obj;
-        obj.id = rand() % 255;
-        obj.type = rand() % 255;
-        obj.width = rand() % 255;
-        obj.height = rand() % 255;
-        obj.x = rand() % 255;
-        obj.y = rand() % 255;
-        obj.vX = rand() % 255;
-        obj.vY = rand() % 255;
-        obj.p = rand() % 255;
-        in.objects.push_back(obj);
-    }
 
     // Encode data.
     uint8_t data[1024];
@@ -352,7 +344,7 @@ bool encodeDecodeTest()
     cout << "Encoded data size: " << size << " bytes" << endl;
 
     // Decode data.
-    ObjectDetectorParams out;
+    VTrackerParams out;
     if (!out.decode(data))
     {
         cout << "Can't decode data" << endl;
@@ -360,9 +352,94 @@ bool encodeDecodeTest()
     }
 
     // Compare params.
-    if (in.logMode != out.logMode)
+    if (in.mode != out.mode)
     {
-        cout << "in.logMode" << endl;
+        cout << "in.mode" << endl;
+        return false;
+    }
+    if (in.rectX != out.rectX)
+    {
+        cout << "in.rectX" << endl;
+        return false;
+    }
+    if (in.rectY != out.rectY)
+    {
+        cout << "in.rectY" << endl;
+        return false;
+    }
+    if (in.rectWidth != out.rectWidth)
+    {
+        cout << "in.rectWidth" << endl;
+        return false;
+    }
+    if (in.rectHeight != out.rectHeight)
+    {
+        cout << "in.rectHeight" << endl;
+        return false;
+    }
+    if (in.objectX != out.objectX)
+    {
+        cout << "in.objectX" << endl;
+        return false;
+    }
+    if (in.objectY != out.objectY)
+    {
+        cout << "in.objectY" << endl;
+        return false;
+    }
+    if (in.objectWidth != out.objectWidth)
+    {
+        cout << "in.objectWidth" << endl;
+        return false;
+    }
+    if (in.objectHeight != out.objectHeight)
+    {
+        cout << "in.objectHeight" << endl;
+        return false;
+    }
+    if (in.lostModeFrameCounter != out.lostModeFrameCounter)
+    {
+        cout << "in.lostModeFrameCounter" << endl;
+        return false;
+    }
+    if (in.frameCounter != out.frameCounter)
+    {
+        cout << "in.frameCounter" << endl;
+        return false;
+    }
+    if (in.frameWidth != out.frameWidth)
+    {
+        cout << "in.frameWidth" << endl;
+        return false;
+    }
+    if (in.frameHeight != out.frameHeight)
+    {
+        cout << "in.frameHeight" << endl;
+        return false;
+    }
+    if (in.searchWindowWidth != out.searchWindowWidth)
+    {
+        cout << "in.searchWindowWidth" << endl;
+        return false;
+    }
+    if (in.searchWindowHeight != out.searchWindowHeight)
+    {
+        cout << "in.searchWindowHeight" << endl;
+        return false;
+    }
+    if (in.searchWindowX != out.searchWindowX)
+    {
+        cout << "in.searchWindowX" << endl;
+        return false;
+    }
+    if (in.searchWindowY != out.searchWindowY)
+    {
+        cout << "in.searchWindowY" << endl;
+        return false;
+    }
+    if (in.lostModeOption != out.lostModeOption)
+    {
+        cout << "in.lostModeOption" << endl;
         return false;
     }
     if (in.frameBufferSize != out.frameBufferSize)
@@ -370,79 +447,54 @@ bool encodeDecodeTest()
         cout << "in.frameBufferSize" << endl;
         return false;
     }
-    if (in.minObjectWidth != out.minObjectWidth)
+    if (in.maxFramesInLostMode != out.maxFramesInLostMode)
     {
-        cout << "in.minObjectWidth" << endl;
+        cout << "in.maxFramesInLostMode" << endl;
         return false;
     }
-    if (in.maxObjectWidth != out.maxObjectWidth)
+    if (in.processedFrameId != out.processedFrameId)
     {
-        cout << "in.maxObjectWidth" << endl;
+        cout << "in.processedFrameId" << endl;
         return false;
     }
-    if (in.minObjectHeight != out.minObjectHeight)
+    if (in.frameId != out.frameId)
     {
-        cout << "in.minObjectHeight" << endl;
+        cout << "in.frameId" << endl;
         return false;
     }
-    if (in.maxObjectHeight != out.maxObjectHeight)
+    if (in.velX != out.velX)
     {
-        cout << "in.maxObjectHeight" << endl;
+        cout << "in.velX" << endl;
         return false;
     }
-    if (in.minXSpeed != out.minXSpeed)
+    if (in.velY != out.velY)
     {
-        cout << "in.minXSpeed" << endl;
+        cout << "in.velY" << endl;
         return false;
     }
-    if (in.maxXSpeed != out.maxXSpeed)
+    if (in.detectionProbability != out.detectionProbability)
     {
-        cout << "in.maxXSpeed" << endl;
+        cout << "in.detectionProbability" << endl;
         return false;
     }
-    if (in.minYSpeed != out.minYSpeed)
+    if (in.rectAutoSize != out.rectAutoSize)
     {
-        cout << "in.minYSpeed" << endl;
+        cout << "in.rectAutoSize" << endl;
         return false;
     }
-    if (in.maxYSpeed != out.maxYSpeed)
+    if (in.rectAutoPosition != out.rectAutoPosition)
     {
-        cout << "in.maxYSpeed" << endl;
+        cout << "in.rectAutoPosition" << endl;
         return false;
     }
-    if (in.xDetectionCriteria != out.xDetectionCriteria)
+    if (in.multipleThreads != out.multipleThreads)
     {
-        cout << "in.xDetectionCriteria" << endl;
+        cout << "in.multipleThreads" << endl;
         return false;
     }
-    if (in.yDetectionCriteria != out.yDetectionCriteria)
+    if (in.numChannels != out.numChannels)
     {
-        cout << "in.yDetectionCriteria" << endl;
-        return false;
-    }
-    if (in.resetCriteria != out.resetCriteria)
-    {
-        cout << "in.resetCriteria" << endl;
-        return false;
-    }
-    if (in.sensitivity != out.sensitivity)
-    {
-        cout << "in.sensitivity" << endl;
-        return false;
-    }
-    if (in.scaleFactor != out.scaleFactor)
-    {
-        cout << "in.scaleFactor" << endl;
-        return false;
-    }
-    if (in.numThreads != out.numThreads)
-    {
-        cout << "in.numThreads" << endl;
-        return false;
-    }
-    if (in.processingTimeMks != out.processingTimeMks)
-    {
-        cout << "in.processingTimeMks" << endl;
+        cout << "in.numChannels" << endl;
         return false;
     }
     if (in.type != out.type)
@@ -450,9 +502,9 @@ bool encodeDecodeTest()
         cout << "in.type" << endl;
         return false;
     }
-    if (in.enable != out.enable)
+    if (in.processingTimeMks != out.processingTimeMks)
     {
-        cout << "in.enable" << endl;
+        cout << "in.processingTimeMks" << endl;
         return false;
     }
     if (in.custom1 != out.custom1)
@@ -468,69 +520,6 @@ bool encodeDecodeTest()
     if (in.custom3 != out.custom3)
     {
         cout << "in.custom3" << endl;
-        return false;
-    }
-    if (in.minDetectionProbability != out.minDetectionProbability)
-    {
-        cout << "in.minDetectionProbability" << endl;
-        return false;
-    }
-    if (in.objects.size() != out.objects.size())
-    {
-        cout << "in.objects.size()" << endl;
-        return false;
-    }
-    for (int i = 0; i < in.objects.size(); ++i)
-    {
-        if (in.objects[i].id != out.objects[i].id)
-        {
-            cout << "in.objects[" << i << "].id" << endl;
-            return false;
-        }
-        if (in.objects[i].type != out.objects[i].type)
-        {
-            cout << "in.objects[" << i << "].type" << endl;
-            return false;
-        }
-        if (in.objects[i].width != out.objects[i].width)
-        {
-            cout << "in.objects[" << i << "].width" << endl;
-            return false;
-        }
-        if (in.objects[i].height != out.objects[i].height)
-        {
-            cout << "in.objects[" << i << "].height" << endl;
-            return false;
-        }
-        if (in.objects[i].x != out.objects[i].x)
-        {
-            cout << "in.objects[" << i << "].x" << endl;
-            return false;
-        }
-        if (in.objects[i].y != out.objects[i].y)
-        {
-            cout << "in.objects[" << i << "].y" << endl;
-            return false;
-        }
-        if (in.objects[i].vX != out.objects[i].vX)
-        {
-            cout << "in.objects[" << i << "].vX" << endl;
-            return false;
-        }
-        if (in.objects[i].vY != out.objects[i].vY)
-        {
-            cout << "in.objects[" << i << "].vY" << endl;
-            return false;
-        }
-        if (in.objects[i].p != out.objects[i].p)
-        {
-            cout << "in.objects[" << i << "].p" << endl;
-            return false;
-        }
-    }
-    if ("" != out.initString)
-    {
-        cout << "in.initString" << endl;
         return false;
     }
 
@@ -546,47 +535,69 @@ bool encodeDecodeCommandsTest()
     uint8_t data[1024];
     int size = 0;
     float outValue = (float)(rand() % 20);
-    ObjectDetector::encodeCommand(data, size, ObjectDetectorCommand::RESET);
+    float arg1 = (float)(rand() % 20);
+    float arg2 = (float)(rand() % 20);
+    float arg3 = (float)(rand() % 20);
+    VTracker::encodeCommand(data, size, VTrackerCommand::CAPTURE, arg1, arg2, arg3);
 
     // Decode command.
-    ObjectDetectorCommand commandId;
-    ObjectDetectorParam paramId;
-    float value = 0.0f;
-    if (ObjectDetector::decodeCommand(data, size, paramId, commandId, value) != 0)
+    VTrackerCommand commandId;
+    VTrackerParam paramId;
+    float inArg1 = (float)(rand() % 20);
+    float inArg2 = (float)(rand() % 20);
+    float inArg3 = (float)(rand() % 20);
+    if (VTracker::decodeCommand(data, size, paramId, commandId, inArg1, inArg2, inArg3) != 0)
     {
         cout << "Command not decoded" << endl;
         return false;
     }
 
-    // Checkk ID and value.
-    if (commandId != ObjectDetectorCommand::RESET)
+    // Checkk ID and args.
+    if (commandId != VTrackerCommand::CAPTURE)
     {
-        cout << "not a VSourceCommand::RESTART" << endl;
+        cout << "not a VTrackerCommand::CAPTURE" << endl;
+        return false;
+    }
+    if (inArg1 != arg1)
+    {
+        cout << "inArg1" << endl;
+        return false;
+    }
+    if (inArg2 != arg2)
+    {
+        cout << "inArg2" << endl;
+        return false;
+    }
+    if (inArg3 != arg3)
+    {
+        cout << "inArg3" << endl;
         return false;
     }
 
     // Encode param.
     outValue = (float)(rand() % 20);
-    ObjectDetector::encodeSetParamCommand(
-    data, size, ObjectDetectorParam::NUM_THREADS, outValue);
+    VTracker::encodeSetParamCommand(
+    data, size, VTrackerParam::MULTIPLE_THREADS, outValue);
 
     // Decode command.
-    value = 0.0f;
-    if (ObjectDetector::decodeCommand(data, size, paramId, commandId, value) != 1)
+    inArg1 = (float)(rand() % 20);
+    inArg2 = (float)(rand() % 20);
+    inArg3 = (float)(rand() % 20);
+    if (VTracker::decodeCommand(data, size, paramId, commandId, inArg1, inArg2, inArg3) != 1)
     {
         cout << "Set param command not decoded" << endl;
         return false;
     }
 
     // Checkk ID and value.
-    if (paramId != ObjectDetectorParam::NUM_THREADS)
+    if (paramId != VTrackerParam::MULTIPLE_THREADS)
     {
-        cout << "not a VSourceParam::EXPOSURE" << endl;
+        cout << "not a VTrackerParam::MULTIPLE_THREADS" << endl;
         return false;
     }
-    if (value != outValue)
+    if (inArg1 != outValue)
     {
-        cout << "not equal value" << endl;
+        cout << "not equal param value" << endl;
         return false;
     }
 
@@ -599,71 +610,86 @@ bool encodeDecodeCommandsTest()
 bool jsonReadWriteTest()
 {
     // Prepare random params.
-    ObjectDetectorParams in;
-    in.logMode = rand() % 255;
+    VTrackerParams in;
+    in.mode = rand() % 255;
+    in.rectX = rand() % 255;
+    in.rectY = rand() % 255;
+    in.rectWidth = rand() % 255;
+    in.rectHeight = rand() % 255;
+    in.objectX = rand() % 255;
+    in.objectY = rand() % 255;
+    in.objectWidth = rand() % 255;
+    in.objectHeight = rand() % 255;
+    in.lostModeFrameCounter = rand() % 255;
+    in.frameCounter = rand() % 255;
+    in.frameWidth = rand() % 255;
+    in.frameHeight = rand() % 255;
+    in.searchWindowWidth = rand() % 255;
+    in.searchWindowHeight = rand() % 255;
+    in.searchWindowX = rand() % 255;
+    in.searchWindowY = rand() % 255;
+    in.lostModeOption = rand() % 255;
     in.frameBufferSize = rand() % 255;
-    in.minObjectWidth = rand() % 255;
-    in.maxObjectWidth = rand() % 255;
-    in.minObjectHeight = rand() % 255;
-    in.maxObjectHeight = rand() % 255;
-    in.minXSpeed = rand() % 255;
-    in.maxXSpeed = rand() % 255;
-    in.minYSpeed = rand() % 255;
-    in.maxYSpeed = rand() % 255;
-    in.xDetectionCriteria = rand() % 255;
-    in.yDetectionCriteria = rand() % 255;
-    in.resetCriteria = rand() % 255;
-    in.sensitivity = rand() % 255;
-    in.scaleFactor = rand() % 255;
-    in.numThreads = rand() % 255;
-    in.processingTimeMks = rand() % 255;
+    in.maxFramesInLostMode = rand() % 255;
+    in.processedFrameId = rand() % 255;
+    in.frameId = rand() % 255;
+    in.velX = rand() % 255;
+    in.velY = rand() % 255;
+    in.detectionProbability = rand() % 255;
+    in.rectAutoSize = rand() % 255;
+    in.rectAutoPosition = rand() % 255;
+    in.multipleThreads = rand() % 255;
+    in.numChannels = rand() % 255;
     in.type = rand() % 255;
-    in.enable = false;
+    in.processingTimeMks = rand() % 255;
     in.custom1 = rand() % 255;
     in.custom2 = rand() % 255;
     in.custom3 = rand() % 255;
-    in.minDetectionProbability = rand() % 255;
-    in.initString = "sfsfsfsfsf";
-    in.objects.clear();
-    for (int i = 0; i < 5; ++i)
-    {
-        Object obj;
-        obj.id = rand() % 255;
-        obj.type = rand() % 255;
-        obj.width = rand() % 255;
-        obj.height = rand() % 255;
-        obj.x = rand() % 255;
-        obj.y = rand() % 255;
-        obj.vX = rand() % 255;
-        obj.vY = rand() % 255;
-        obj.p = rand() % 255;
-        in.objects.push_back(obj);
-    }
 
     // Write params to file.
     cr::utils::ConfigReader inConfig;
-    inConfig.set(in, "ObjectDetectorParams");
-    inConfig.writeToFile("ObjectDetectorParams.json");
+    inConfig.set(in, "VTrackerParams");
+    inConfig.writeToFile("VTrackerParams.json");
 
     // Read params from file.
     cr::utils::ConfigReader outConfig;
-    if(!outConfig.readFromFile("ObjectDetectorParams.json"))
+    if(!outConfig.readFromFile("VTrackerParams.json"))
     {
         cout << "Can't open config file" << endl;
         return false;
     }
 
-    ObjectDetectorParams out;
-    if(!outConfig.get(out, "ObjectDetectorParams"))
+    VTrackerParams out;
+    if(!outConfig.get(out, "VTrackerParams"))
     {
         cout << "Can't read params from file" << endl;
         return false;
     }
 
     // Compare params.
-    if (in.logMode != out.logMode)
+    if (in.rectWidth != out.rectWidth)
     {
-        cout << "in.logMode" << endl;
+        cout << "in.rectWidth" << endl;
+        return false;
+    }
+    if (in.rectHeight != out.rectHeight)
+    {
+        cout << "in.rectHeight" << endl;
+        return false;
+    }
+    if (in.searchWindowWidth != out.searchWindowWidth)
+    {
+        cout << "in.searchWindowWidth" << endl;
+        return false;
+    }
+    if (in.searchWindowHeight != out.searchWindowHeight)
+    {
+        cout << "in.searchWindowHeight" << endl;
+        return false;
+    }
+    if (in.lostModeOption != out.lostModeOption)
+    {
+        cout << "in.lostModeOption" << endl;
         return false;
     }
     if (in.frameBufferSize != out.frameBufferSize)
@@ -671,84 +697,34 @@ bool jsonReadWriteTest()
         cout << "in.frameBufferSize" << endl;
         return false;
     }
-    if (in.minObjectWidth != out.minObjectWidth)
+    if (in.maxFramesInLostMode != out.maxFramesInLostMode)
     {
-        cout << "in.minObjectWidth" << endl;
+        cout << "in.maxFramesInLostMode" << endl;
         return false;
     }
-    if (in.maxObjectWidth != out.maxObjectWidth)
+    if (in.rectAutoSize != out.rectAutoSize)
     {
-        cout << "in.maxObjectWidth" << endl;
+        cout << "in.rectAutoSize" << endl;
         return false;
     }
-    if (in.minObjectHeight != out.minObjectHeight)
+    if (in.rectAutoPosition != out.rectAutoPosition)
     {
-        cout << "in.minObjectHeight" << endl;
+        cout << "in.rectAutoPosition" << endl;
         return false;
     }
-    if (in.maxObjectHeight != out.maxObjectHeight)
+    if (in.multipleThreads != out.multipleThreads)
     {
-        cout << "in.maxObjectHeight" << endl;
+        cout << "in.multipleThreads" << endl;
         return false;
     }
-    if (in.minXSpeed != out.minXSpeed)
+    if (in.numChannels != out.numChannels)
     {
-        cout << "in.minXSpeed" << endl;
-        return false;
-    }
-    if (in.maxXSpeed != out.maxXSpeed)
-    {
-        cout << "in.maxXSpeed" << endl;
-        return false;
-    }
-    if (in.minYSpeed != out.minYSpeed)
-    {
-        cout << "in.minYSpeed" << endl;
-        return false;
-    }
-    if (in.maxYSpeed != out.maxYSpeed)
-    {
-        cout << "in.maxYSpeed" << endl;
-        return false;
-    }
-    if (in.xDetectionCriteria != out.xDetectionCriteria)
-    {
-        cout << "in.xDetectionCriteria" << endl;
-        return false;
-    }
-    if (in.yDetectionCriteria != out.yDetectionCriteria)
-    {
-        cout << "in.yDetectionCriteria" << endl;
-        return false;
-    }
-    if (in.resetCriteria != out.resetCriteria)
-    {
-        cout << "in.resetCriteria" << endl;
-        return false;
-    }
-    if (in.sensitivity != out.sensitivity)
-    {
-        cout << "in.sensitivity" << endl;
-        return false;
-    }
-    if (in.scaleFactor != out.scaleFactor)
-    {
-        cout << "in.scaleFactor" << endl;
-        return false;
-    }
-    if (in.numThreads != out.numThreads)
-    {
-        cout << "in.numThreads" << endl;
+        cout << "in.numChannels" << endl;
         return false;
     }
     if (in.type != out.type)
     {
         cout << "in.type" << endl;
-        return false;
-    }
-    if (in.enable != out.enable)
-    {
-        cout << "in.enable" << endl;
         return false;
     }
     if (in.custom1 != out.custom1)
@@ -766,16 +742,6 @@ bool jsonReadWriteTest()
         cout << "in.custom3" << endl;
         return false;
     }
-    if (in.minDetectionProbability != out.minDetectionProbability)
-    {
-        cout << "in.minDetectionProbability" << endl;
-        return false;
-    }
-    if (in.initString != out.initString)
-    {
-        cout << "in.initString" << endl;
-        return false;
-    }
 
     return true;
 }
@@ -786,71 +752,78 @@ bool jsonReadWriteTest()
 bool encodeDecodeWithMaskTest()
 {
     // Prepare random params.
-    ObjectDetectorParams in;
-    in.logMode = rand() % 255;
+    VTrackerParams in;
+    in.mode = rand() % 255;
+    in.rectX = rand() % 255;
+    in.rectY = rand() % 255;
+    in.rectWidth = rand() % 255;
+    in.rectHeight = rand() % 255;
+    in.objectX = rand() % 255;
+    in.objectY = rand() % 255;
+    in.objectWidth = rand() % 255;
+    in.objectHeight = rand() % 255;
+    in.lostModeFrameCounter = rand() % 255;
+    in.frameCounter = rand() % 255;
+    in.frameWidth = rand() % 255;
+    in.frameHeight = rand() % 255;
+    in.searchWindowWidth = rand() % 255;
+    in.searchWindowHeight = rand() % 255;
+    in.searchWindowX = rand() % 255;
+    in.searchWindowY = rand() % 255;
+    in.lostModeOption = rand() % 255;
     in.frameBufferSize = rand() % 255;
-    in.minObjectWidth = rand() % 255;
-    in.maxObjectWidth = rand() % 255;
-    in.minObjectHeight = rand() % 255;
-    in.maxObjectHeight = rand() % 255;
-    in.minXSpeed = rand() % 255;
-    in.maxXSpeed = rand() % 255;
-    in.minYSpeed = rand() % 255;
-    in.maxYSpeed = rand() % 255;
-    in.xDetectionCriteria = rand() % 255;
-    in.yDetectionCriteria = rand() % 255;
-    in.resetCriteria = rand() % 255;
-    in.sensitivity = rand() % 255;
-    in.scaleFactor = rand() % 255;
-    in.numThreads = rand() % 255;
-    in.processingTimeMks = rand() % 255;
+    in.maxFramesInLostMode = rand() % 255;
+    in.processedFrameId = rand() % 255;
+    in.frameId = rand() % 255;
+    in.velX = rand() % 255;
+    in.velY = rand() % 255;
+    in.detectionProbability = rand() % 255;
+    in.rectAutoSize = rand() % 255;
+    in.rectAutoPosition = rand() % 255;
+    in.multipleThreads = rand() % 255;
+    in.numChannels = rand() % 255;
     in.type = rand() % 255;
-    in.enable = false;
+    in.processingTimeMks = rand() % 255;
     in.custom1 = rand() % 255;
     in.custom2 = rand() % 255;
     in.custom3 = rand() % 255;
-    in.minDetectionProbability = rand() % 255;
-    in.objects.clear();
-    for (int i = 0; i < 5; ++i)
-    {
-        Object obj;
-        obj.id = rand() % 255;
-        obj.type = rand() % 255;
-        obj.width = rand() % 255;
-        obj.height = rand() % 255;
-        obj.x = rand() % 255;
-        obj.y = rand() % 255;
-        obj.vX = rand() % 255;
-        obj.vY = rand() % 255;
-        obj.p = rand() % 255;
-        in.objects.push_back(obj);
-    }
 
     // Prepare mask.
-    ObjectDetectorParamsMask mask;
-    mask.logMode = true;
-    mask.frameBufferSize = false;
-    mask.minObjectWidth = true;
-    mask.maxObjectWidth = false;
-    mask.minObjectHeight = true;
-    mask.maxObjectHeight = false;
-    mask.minXSpeed = true;
-    mask.maxXSpeed = false;
-    mask.minYSpeed = true;
-    mask.maxYSpeed = false;
-    mask.xDetectionCriteria = true;
-    mask.yDetectionCriteria = false;
-    mask.resetCriteria = true;
-    mask.sensitivity = false;
-    mask.scaleFactor = true;
-    mask.numThreads = false;
-    mask.processingTimeMks = true;
+    VTrackerParamsMask mask;
+    mask.mode = true;
+    mask.rectX = false;
+    mask.rectY = true;
+    mask.rectWidth = false;
+    mask.rectHeight = true;
+    mask.objectX = false;
+    mask.objectY = true;
+    mask.objectWidth = false;
+    mask.objectHeight = true;
+    mask.lostModeFrameCounter = false;
+    mask.frameCounter = true;
+    mask.frameWidth = false;
+    mask.frameHeight = true;
+    mask.searchWindowWidth = false;
+    mask.searchWindowHeight = true;
+    mask.searchWindowX = false;
+    mask.searchWindowY = true;
+    mask.lostModeOption = false;
+    mask.frameBufferSize = true;
+    mask.maxFramesInLostMode = false;
+    mask.processedFrameId = true;
+    mask.frameId = false;
+    mask.velX = true;
+    mask.velY = false;
+    mask.detectionProbability = true;
+    mask.rectAutoSize = false;
+    mask.rectAutoPosition = true;
+    mask.multipleThreads = false;
+    mask.numChannels = true;
     mask.type = false;
-    mask.enable = true;
+    mask.processingTimeMks = true;
     mask.custom1 = false;
     mask.custom2 = true;
     mask.custom3 = false;
-    mask.objects = true;
 
     // Encode data.
     uint8_t data[1024];
@@ -860,7 +833,7 @@ bool encodeDecodeWithMaskTest()
     cout << "Encoded data size: " << size << " bytes" << endl;
 
     // Decode data.
-    ObjectDetectorParams out;
+    VTrackerParams out;
     if (!out.decode(data))
     {
         cout << "Can't decode data" << endl;
@@ -868,89 +841,149 @@ bool encodeDecodeWithMaskTest()
     }
 
     // Compare params.
-    if (in.logMode != out.logMode)
+    if (in.mode != out.mode)
     {
-        cout << "in.logMode" << endl;
+        cout << "in.mode" << endl;
         return false;
     }
-    if (0 != out.frameBufferSize)
+    if (0 != out.rectX)
+    {
+        cout << "in.rectX" << endl;
+        return false;
+    }
+    if (in.rectY != out.rectY)
+    {
+        cout << "in.rectY" << endl;
+        return false;
+    }
+    if (0 != out.rectWidth)
+    {
+        cout << "in.rectWidth" << endl;
+        return false;
+    }
+    if (in.rectHeight != out.rectHeight)
+    {
+        cout << "in.rectHeight" << endl;
+        return false;
+    }
+    if (0 != out.objectX)
+    {
+        cout << "in.objectX" << endl;
+        return false;
+    }
+    if (in.objectY != out.objectY)
+    {
+        cout << "in.objectY" << endl;
+        return false;
+    }
+    if (0 != out.objectWidth)
+    {
+        cout << "in.objectWidth" << endl;
+        return false;
+    }
+    if (in.objectHeight != out.objectHeight)
+    {
+        cout << "in.objectHeight" << endl;
+        return false;
+    }
+    if (0 != out.lostModeFrameCounter)
+    {
+        cout << "in.lostModeFrameCounter" << endl;
+        return false;
+    }
+    if (in.frameCounter != out.frameCounter)
+    {
+        cout << "in.frameCounter" << endl;
+        return false;
+    }
+    if (0 != out.frameWidth)
+    {
+        cout << "in.frameWidth" << endl;
+        return false;
+    }
+    if (in.frameHeight != out.frameHeight)
+    {
+        cout << "in.frameHeight" << endl;
+        return false;
+    }
+    if (0 != out.searchWindowWidth)
+    {
+        cout << "in.searchWindowWidth" << endl;
+        return false;
+    }
+    if (in.searchWindowHeight != out.searchWindowHeight)
+    {
+        cout << "in.searchWindowHeight" << endl;
+        return false;
+    }
+    if (0!= out.searchWindowX)
+    {
+        cout << "in.searchWindowX" << endl;
+        return false;
+    }
+    if (in.searchWindowY != out.searchWindowY)
+    {
+        cout << "in.searchWindowY" << endl;
+        return false;
+    }
+    if (0 != out.lostModeOption)
+    {
+        cout << "in.lostModeOption" << endl;
+        return false;
+    }
+    if (in.frameBufferSize != out.frameBufferSize)
     {
         cout << "in.frameBufferSize" << endl;
         return false;
     }
-    if (in.minObjectWidth != out.minObjectWidth)
+    if (0 != out.maxFramesInLostMode)
     {
-        cout << "in.minObjectWidth" << endl;
+        cout << "in.maxFramesInLostMode" << endl;
         return false;
     }
-    if (0 != out.maxObjectWidth)
+    if (in.processedFrameId != out.processedFrameId)
     {
-        cout << "in.maxObjectWidth" << endl;
+        cout << "in.processedFrameId" << endl;
         return false;
     }
-    if (in.minObjectHeight != out.minObjectHeight)
+    if (0 != out.frameId)
     {
-        cout << "in.minObjectHeight" << endl;
+        cout << "in.frameId" << endl;
         return false;
     }
-    if (0 != out.maxObjectHeight)
+    if (in.velX != out.velX)
     {
-        cout << "in.maxObjectHeight" << endl;
+        cout << "in.velX" << endl;
         return false;
     }
-    if (in.minXSpeed != out.minXSpeed)
+    if (0 != out.velY)
     {
-        cout << "in.minXSpeed" << endl;
+        cout << "in.velY" << endl;
         return false;
     }
-    if (0 != out.maxXSpeed)
+    if (in.detectionProbability != out.detectionProbability)
     {
-        cout << "in.maxXSpeed" << endl;
+        cout << "in.detectionProbability" << endl;
         return false;
     }
-    if (in.minYSpeed != out.minYSpeed)
+    if (false != out.rectAutoSize)
     {
-        cout << "in.minYSpeed" << endl;
+        cout << "in.rectAutoSize" << endl;
         return false;
     }
-    if (0 != out.maxYSpeed)
+    if (in.rectAutoPosition != out.rectAutoPosition)
     {
-        cout << "in.maxYSpeed" << endl;
+        cout << "in.rectAutoPosition" << endl;
         return false;
     }
-    if (in.xDetectionCriteria != out.xDetectionCriteria)
+    if (false != out.multipleThreads)
     {
-        cout << "in.xDetectionCriteria" << endl;
+        cout << "in.multipleThreads" << endl;
         return false;
     }
-    if (0 != out.yDetectionCriteria)
+    if (in.numChannels != out.numChannels)
     {
-        cout << "in.yDetectionCriteria" << endl;
-        return false;
-    }
-    if (in.resetCriteria != out.resetCriteria)
-    {
-        cout << "in.resetCriteria" << endl;
-        return false;
-    }
-    if (0 != out.sensitivity)
-    {
-        cout << "in.sensitivity" << endl;
-        return false;
-    }
-    if (in.scaleFactor != out.scaleFactor)
-    {
-        cout << "in.scaleFactor" << endl;
-        return false;
-    }
-    if (0 != out.numThreads)
-    {
-        cout << "in.numThreads" << endl;
-        return false;
-    }
-    if (in.processingTimeMks != out.processingTimeMks)
-    {
-        cout << "in.processingTimeMks" << endl;
+        cout << "in.numChannels" << endl;
         return false;
     }
     if (0 != out.type)
@@ -958,9 +991,9 @@ bool encodeDecodeWithMaskTest()
         cout << "in.type" << endl;
         return false;
     }
-    if (in.enable != out.enable)
+    if (in.processingTimeMks != out.processingTimeMks)
     {
-        cout << "in.enable" << endl;
+        cout << "in.processingTimeMks" << endl;
         return false;
     }
     if (0 != out.custom1)
@@ -978,78 +1011,8 @@ bool encodeDecodeWithMaskTest()
         cout << "in.custom3" << endl;
         return false;
     }
-    if (in.minDetectionProbability != out.minDetectionProbability)
-    {
-        cout << "in.minDetectionProbability" << endl;
-        return false;
-    }
-    if (in.objects.size() != out.objects.size())
-    {
-        cout << "in.objects.size()" << endl;
-        return false;
-    }
-    for (int i = 0; i < in.objects.size(); ++i)
-    {
-        if (in.objects[i].id != out.objects[i].id)
-        {
-            cout << "in.objects[" << i << "].id" << endl;
-            return false;
-        }
-        if (in.objects[i].type != out.objects[i].type)
-        {
-            cout << "in.objects[" << i << "].type" << endl;
-            return false;
-        }
-        if (in.objects[i].width != out.objects[i].width)
-        {
-            cout << "in.objects[" << i << "].width" << endl;
-            return false;
-        }
-        if (in.objects[i].height != out.objects[i].height)
-        {
-            cout << "in.objects[" << i << "].height" << endl;
-            return false;
-        }
-        if (in.objects[i].x != out.objects[i].x)
-        {
-            cout << "in.objects[" << i << "].x" << endl;
-            return false;
-        }
-        if (in.objects[i].y != out.objects[i].y)
-        {
-            cout << "in.objects[" << i << "].y" << endl;
-            return false;
-        }
-        if (in.objects[i].vX != out.objects[i].vX)
-        {
-            cout << "in.objects[" << i << "].vX" << endl;
-            return false;
-        }
-        if (in.objects[i].vY != out.objects[i].vY)
-        {
-            cout << "in.objects[" << i << "].vY" << endl;
-            return false;
-        }
-        if (in.objects[i].p != out.objects[i].p)
-        {
-            cout << "in.objects[" << i << "].p" << endl;
-            return false;
-        }
-    }
 
     return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

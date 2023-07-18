@@ -1,61 +1,73 @@
-#include "ObjectDetector.h"
-#include "ObjectDetectorVersion.h"
+#include "VTracker.h"
+#include "VTrackerVersion.h"
 
 
 
-std::string cr::detector::ObjectDetector::getVersion()
+std::string cr::vtracker::VTracker::getVersion()
 {
-    return OBJECT_DETECTOR_VERSION;
+    return VTRACKER_VERSION;
 }
 
 
 
-cr::detector::ObjectDetectorParams &cr::detector::ObjectDetectorParams::operator= (const cr::detector::ObjectDetectorParams &src)
+cr::vtracker::VTrackerParams &cr::vtracker::VTrackerParams::operator= (const cr::vtracker::VTrackerParams &src)
 {
     // Check yourself.
     if (this == &src)
         return *this;
 
-    // Copy params.
-    logMode = src.logMode;
+    mode = src.mode;
+    rectX = src.rectX;
+    rectY = src.rectY;
+    rectWidth = src.rectWidth;
+    rectHeight = src.rectHeight;
+    objectX = src.objectX;
+    objectY = src.objectY;
+    objectWidth = src.objectWidth;
+
+    objectHeight = src.objectHeight;
+    lostModeFrameCounter = src.lostModeFrameCounter;
+    frameCounter = src.frameCounter;
+    frameWidth = src.frameWidth;
+    frameHeight = src.frameHeight;
+    searchWindowWidth = src.searchWindowWidth;
+    searchWindowHeight = src.searchWindowHeight;
+    searchWindowX = src.searchWindowX;
+
+    searchWindowY = src.searchWindowY;
+    lostModeOption = src.lostModeOption;
     frameBufferSize = src.frameBufferSize;
-    minObjectWidth = src.minObjectWidth;
-    maxObjectWidth = src.maxObjectWidth;
-    minObjectHeight = src.minObjectHeight;
-    maxObjectHeight = src.maxObjectHeight;
-    minXSpeed = src.minXSpeed;
-    maxXSpeed = src.maxXSpeed;
-    minYSpeed = src.minYSpeed;
-    maxYSpeed = src.maxYSpeed;
-    xDetectionCriteria = src.xDetectionCriteria;
-    yDetectionCriteria = src.yDetectionCriteria;
-    resetCriteria = src.resetCriteria;
-    sensitivity = src.sensitivity;
-    scaleFactor = src.scaleFactor;
-    numThreads = src.numThreads;
-    processingTimeMks = src.processingTimeMks;
+    maxFramesInLostMode = src.maxFramesInLostMode;
+    processedFrameId = src.processedFrameId;
+    frameId = src.frameId;
+    velX = src.velX;
+    velY = src.velY;
+
+    detectionProbability = src.detectionProbability;
+    rectAutoSize = src.rectAutoSize;
+    rectAutoPosition = src.rectAutoPosition;
+    multipleThreads = src.multipleThreads;
+    numChannels = src.numChannels;
     type = src.type;
-    enable = src.enable;
+    processingTimeMks = src.processingTimeMks;
     custom1 = src.custom1;
+
     custom2 = src.custom2;
     custom3 = src.custom3;
-    objects = src.objects;
-    minDetectionProbability = src.minDetectionProbability;
-    initString = src.initString;
 
     return *this;
 }
 
 
 
-void cr::detector::ObjectDetectorParams::encode(
-        uint8_t* data, int& size, cr::detector::ObjectDetectorParamsMask* mask)
+void cr::vtracker::VTrackerParams::encode(
+        uint8_t* data, int& size, cr::vtracker::VTrackerParamsMask* mask)
 {
     // Encode version.
     int pos = 0;
     data[pos] = 0x02; pos += 1;
-    data[pos] = OBJECT_DETECTOR_MAJOR_VERSION; pos += 1;
-    data[pos] = OBJECT_DETECTOR_MINOR_VERSION; pos += 1;
+    data[pos] = VTRACKER_MAJOR_VERSION; pos += 1;
+    data[pos] = VTRACKER_MINOR_VERSION; pos += 1;
 
     if (mask == nullptr)
     {
@@ -63,47 +75,48 @@ void cr::detector::ObjectDetectorParams::encode(
         data[pos] = 0xFF; pos += 1;
         data[pos] = 0xFF; pos += 1;
         data[pos] = 0xFF; pos += 1;
+        data[pos] = 0xFF; pos += 1;
+        data[pos] = 0xFF; pos += 1;
 
         // Encode data.
-        memcpy(&data[pos], &logMode, 4); pos += 4;
+        memcpy(&data[pos], &mode, 4); pos += 4;
+        memcpy(&data[pos], &rectX, 4); pos += 4;
+        memcpy(&data[pos], &rectY, 4); pos += 4;
+        memcpy(&data[pos], &rectWidth, 4); pos += 4;
+        memcpy(&data[pos], &rectHeight, 4); pos += 4;
+        memcpy(&data[pos], &objectX, 4); pos += 4;
+        memcpy(&data[pos], &objectY, 4); pos += 4;
+        memcpy(&data[pos], &objectWidth, 4); pos += 4;
+
+        memcpy(&data[pos], &objectHeight, 4); pos += 4;
+        memcpy(&data[pos], &lostModeFrameCounter, 4); pos += 4;
+        memcpy(&data[pos], &frameCounter, 4); pos += 4;
+        memcpy(&data[pos], &frameWidth, 4); pos += 4;
+        memcpy(&data[pos], &frameHeight, 4); pos += 4;
+        memcpy(&data[pos], &searchWindowWidth, 4); pos += 4;
+        memcpy(&data[pos], &searchWindowHeight, 4); pos += 4;
+        memcpy(&data[pos], &searchWindowX, 4); pos += 4;
+
+        memcpy(&data[pos], &searchWindowY, 4); pos += 4;
+        memcpy(&data[pos], &lostModeOption, 4); pos += 4;
         memcpy(&data[pos], &frameBufferSize, 4); pos += 4;
-        memcpy(&data[pos], &minObjectWidth, 4); pos += 4;
-        memcpy(&data[pos], &maxObjectWidth, 4); pos += 4;
-        memcpy(&data[pos], &minObjectHeight, 4); pos += 4;
-        memcpy(&data[pos], &maxObjectHeight, 4); pos += 4;
-        memcpy(&data[pos], &minXSpeed, 4); pos += 4;
-        memcpy(&data[pos], &maxXSpeed, 4); pos += 4;
+        memcpy(&data[pos], &maxFramesInLostMode, 4); pos += 4;
+        memcpy(&data[pos], &processedFrameId, 4); pos += 4;
+        memcpy(&data[pos], &frameId, 4); pos += 4;
+        memcpy(&data[pos], &velX, 4); pos += 4;
+        memcpy(&data[pos], &velY, 4); pos += 4;
 
-        memcpy(&data[pos], &minYSpeed, 4); pos += 4;
-        memcpy(&data[pos], &maxYSpeed, 4); pos += 4;
-        memcpy(&data[pos], &xDetectionCriteria, 4); pos += 4;
-        memcpy(&data[pos], &yDetectionCriteria, 4); pos += 4;
-        memcpy(&data[pos], &resetCriteria, 4); pos += 4;
-        memcpy(&data[pos], &sensitivity, 4); pos += 4;
-        memcpy(&data[pos], &scaleFactor, 4); pos += 4;
-        memcpy(&data[pos], &numThreads, 4); pos += 4;
-
-        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
+        memcpy(&data[pos], &detectionProbability, 4); pos += 4;
+        data[pos] = rectAutoSize == true ? 0x01 : 0x00; pos += 1;
+        data[pos] = rectAutoPosition == true ? 0x01 : 0x00; pos += 1;
+        data[pos] = multipleThreads == true ? 0x01 : 0x00; pos += 1;
+        memcpy(&data[pos], &numChannels, 4); pos += 4;
         memcpy(&data[pos], &type, 4); pos += 4;
-        data[pos] = enable ? 0x01 : 0x00; pos += 1;
+        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
         memcpy(&data[pos], &custom1, 4); pos += 4;
+
         memcpy(&data[pos], &custom2, 4); pos += 4;
-        memcpy(&data[pos], &custom3, 4); pos += 4;
-        memcpy(&data[pos], &minDetectionProbability, 4); pos += 4;
-        int numObjects = (int)objects.size();
-        memcpy(&data[pos], &numObjects, 4); pos += 4;
-        for (int i = 0; i < numObjects; ++i)
-        {
-            memcpy(&data[pos], &objects[i].id, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].type, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].width, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].height, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].x, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].y, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].vX, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].vY, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].p, 4); pos += 4;
-        }
+        memcpy(&data[pos], &custom3, 4); pos += 4;   
 
         size = pos;
 
@@ -112,120 +125,187 @@ void cr::detector::ObjectDetectorParams::encode(
 
     // Prepare mask.
     data[pos] = 0;
-    data[pos] = data[pos] | (mask->logMode ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameBufferSize ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->minObjectWidth ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->maxObjectWidth ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->minObjectHeight ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->maxObjectHeight ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->minXSpeed ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->maxXSpeed ? (uint8_t)1 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->mode ? (uint8_t)128 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectX ? (uint8_t)64 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectY ? (uint8_t)32 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectWidth ? (uint8_t)16 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectHeight ? (uint8_t)8 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->objectX ? (uint8_t)4 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->objectY ? (uint8_t)2 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->objectWidth ? (uint8_t)1 : (uint8_t)0);
     pos += 1;
     data[pos] = 0;
-    data[pos] = data[pos] | (mask->minYSpeed ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->maxYSpeed ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->xDetectionCriteria ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->yDetectionCriteria ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->resetCriteria ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->sensitivity ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->scaleFactor ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->numThreads ? (uint8_t)1 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->objectHeight ? (uint8_t)128 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->lostModeFrameCounter ? (uint8_t)64 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->frameCounter ? (uint8_t)32 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->frameWidth ? (uint8_t)16 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->frameHeight ? (uint8_t)8 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->searchWindowWidth ? (uint8_t)4 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->searchWindowHeight ? (uint8_t)2 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->searchWindowX ? (uint8_t)1 : (uint8_t)0);
     pos += 1;
     data[pos] = 0;
-    data[pos] = data[pos] | (mask->processingTimeMks ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->type ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->enable ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->custom1 ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->custom2 ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->custom3 ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->minDetectionProbability ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->objects ? (uint8_t)1 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->searchWindowY ? (uint8_t)128 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->lostModeOption ? (uint8_t)64 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->frameBufferSize ? (uint8_t)32 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->maxFramesInLostMode ? (uint8_t)16 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->processedFrameId ? (uint8_t)8 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->frameId ? (uint8_t)4 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->velX ? (uint8_t)2 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->velY ? (uint8_t)1 : (uint8_t)0);
+    pos += 1;
+    data[pos] = 0;
+    data[pos] = data[pos] | (mask->detectionProbability ? (uint8_t)128 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectAutoSize ? (uint8_t)64 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->rectAutoPosition ? (uint8_t)32 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->multipleThreads ? (uint8_t)16 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->numChannels ? (uint8_t)8 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->type ? (uint8_t)4 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->processingTimeMks ? (uint8_t)2 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->custom1 ? (uint8_t)1 : (uint8_t)0);
+    pos += 1;
+    data[pos] = 0;
+    data[pos] = data[pos] | (mask->custom2 ? (uint8_t)128 : (uint8_t)0);
+    data[pos] = data[pos] | (mask->custom3 ? (uint8_t)64 : (uint8_t)0);
     pos += 1;
 
-    if (mask->logMode)
+    if (mask->mode)
     {
-        memcpy(&data[pos], &logMode, 4); pos += 4;
+        memcpy(&data[pos], &mode, 4); pos += 4;
+    }
+    if (mask->rectX)
+    {
+        memcpy(&data[pos], &rectX, 4); pos += 4;
+    }
+    if (mask->rectY)
+    {
+        memcpy(&data[pos], &rectY, 4); pos += 4;
+    }
+    if (mask->rectWidth)
+    {
+        memcpy(&data[pos], &rectWidth, 4); pos += 4;
+    }
+    if (mask->rectHeight)
+    {
+        memcpy(&data[pos], &rectHeight, 4); pos += 4;
+    }
+    if (mask->objectX)
+    {
+        memcpy(&data[pos], &objectX, 4); pos += 4;
+    }
+    if (mask->objectY)
+    {
+        memcpy(&data[pos], &objectY, 4); pos += 4;
+    }
+    if (mask->objectWidth)
+    {
+        memcpy(&data[pos], &objectWidth, 4); pos += 4;
+    }
+
+
+    if (mask->objectHeight)
+    {
+        memcpy(&data[pos], &objectHeight, 4); pos += 4;
+    }
+    if (mask->lostModeFrameCounter)
+    {
+        memcpy(&data[pos], &lostModeFrameCounter, 4); pos += 4;
+    }
+    if (mask->frameCounter)
+    {
+        memcpy(&data[pos], &frameCounter, 4); pos += 4;
+    }
+    if (mask->frameWidth)
+    {
+        memcpy(&data[pos], &frameWidth, 4); pos += 4;
+    }
+    if (mask->frameHeight)
+    {
+        memcpy(&data[pos], &frameHeight, 4); pos += 4;
+    }
+    if (mask->searchWindowWidth)
+    {
+        memcpy(&data[pos], &searchWindowWidth, 4); pos += 4;
+    }
+    if (mask->searchWindowHeight)
+    {
+        memcpy(&data[pos], &searchWindowHeight, 4); pos += 4;
+    }
+    if (mask->searchWindowX)
+    {
+        memcpy(&data[pos], &searchWindowX, 4); pos += 4;
+    }
+
+
+    if (mask->searchWindowY)
+    {
+        memcpy(&data[pos], &searchWindowY, 4); pos += 4;
+    }
+    if (mask->lostModeOption)
+    {
+        memcpy(&data[pos], &lostModeOption, 4); pos += 4;
     }
     if (mask->frameBufferSize)
     {
         memcpy(&data[pos], &frameBufferSize, 4); pos += 4;
     }
-    if (mask->minObjectWidth)
+    if (mask->maxFramesInLostMode)
     {
-        memcpy(&data[pos], &minObjectWidth, 4); pos += 4;
+        memcpy(&data[pos], &maxFramesInLostMode, 4); pos += 4;
     }
-    if (mask->maxObjectWidth)
+    if (mask->processedFrameId)
     {
-        memcpy(&data[pos], &maxObjectWidth, 4); pos += 4;
+        memcpy(&data[pos], &processedFrameId, 4); pos += 4;
     }
-    if (mask->minObjectHeight)
+    if (mask->frameId)
     {
-        memcpy(&data[pos], &minObjectHeight, 4); pos += 4;
+        memcpy(&data[pos], &frameId, 4); pos += 4;
     }
-    if (mask->maxObjectHeight)
+    if (mask->velX)
     {
-        memcpy(&data[pos], &maxObjectHeight, 4); pos += 4;
+        memcpy(&data[pos], &velX, 4); pos += 4;
     }
-    if (mask->minXSpeed)
+    if (mask->velY)
     {
-        memcpy(&data[pos], &minXSpeed, 4); pos += 4;
-    }
-    if (mask->maxXSpeed)
-    {
-        memcpy(&data[pos], &maxXSpeed, 4); pos += 4;
+        memcpy(&data[pos], &velY, 4); pos += 4;
     }
 
 
-    if (mask->minYSpeed)
-    {
-        memcpy(&data[pos], &minYSpeed, 4); pos += 4;
-    }
-    if (mask->maxYSpeed)
-    {
-        memcpy(&data[pos], &maxYSpeed, 4); pos += 4;
-    }
-    if (mask->xDetectionCriteria)
-    {
-        memcpy(&data[pos], &xDetectionCriteria, 4); pos += 4;
-    }
-    if (mask->yDetectionCriteria)
-    {
-        memcpy(&data[pos], &yDetectionCriteria, 4); pos += 4;
-    }
-    if (mask->resetCriteria)
-    {
-        memcpy(&data[pos], &resetCriteria, 4); pos += 4;
-    }
-    if (mask->sensitivity)
-    {
-        memcpy(&data[pos], &sensitivity, 4); pos += 4;
-    }
-    if (mask->scaleFactor)
-    {
-        memcpy(&data[pos], &scaleFactor, 4); pos += 4;
-    }
-    if (mask->numThreads)
-    {
-        memcpy(&data[pos], &numThreads, 4); pos += 4;
-    }
 
-
-    if (mask->processingTimeMks)
+    if (mask->detectionProbability)
     {
-        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
+        memcpy(&data[pos], &detectionProbability, 4); pos += 4;
+    }
+    if (mask->rectAutoSize)
+    {
+        data[pos] = rectAutoSize == true ? 0x01 : 0x00; pos += 1;
+    }
+    if (mask->rectAutoPosition)
+    {
+        data[pos] = rectAutoPosition == true ? 0x01 : 0x00; pos += 1;
+    }
+    if (mask->multipleThreads)
+    {
+        data[pos] = multipleThreads == true ? 0x01 : 0x00; pos += 1;
+    }
+    if (mask->numChannels)
+    {
+        memcpy(&data[pos], &numChannels, 4); pos += 4;
     }
     if (mask->type)
     {
         memcpy(&data[pos], &type, 4); pos += 4;
     }
-    if (mask->enable)
+    if (mask->processingTimeMks)
     {
-        data[pos] = enable == true ? 0x01 : 0x00; pos += 1;
+        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
     }
     if (mask->custom1)
     {
         memcpy(&data[pos], &custom1, 4); pos += 4;
     }
+
+
     if (mask->custom2)
     {
         memcpy(&data[pos], &custom2, 4); pos += 4;
@@ -234,60 +314,178 @@ void cr::detector::ObjectDetectorParams::encode(
     {
         memcpy(&data[pos], &custom3, 4); pos += 4;
     }
-    if (mask->minDetectionProbability)
-    {
-        memcpy(&data[pos], &minDetectionProbability, 4); pos += 4;
-    }
-    if (mask->objects)
-    {
-        int numObjects = (int)objects.size();
-        memcpy(&data[pos], &numObjects, 4); pos += 4;
-        for (int i = 0; i < numObjects; ++i)
-        {
-            memcpy(&data[pos], &objects[i].id, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].type, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].width, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].height, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].x, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].y, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].vX, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].vY, 4); pos += 4;
-            memcpy(&data[pos], &objects[i].p, 4); pos += 4;
-        }
-    }
-    else
-    {
-        int numObjects = 0;
-        memcpy(&data[pos], &numObjects, 4); pos += 4;
-    }
 
     size = pos;
 }
 
 
 
-bool cr::detector::ObjectDetectorParams::decode(uint8_t* data)
+bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
 {
     // Check header.
     if (data[0] != 0x02)
         return false;
 
     // Check version version.
-    if (data[1] != OBJECT_DETECTOR_MAJOR_VERSION ||
-        data[2] != OBJECT_DETECTOR_MINOR_VERSION)
+    if (data[1] != VTRACKER_MAJOR_VERSION || data[2] != VTRACKER_MINOR_VERSION)
         return false;
 
+
+
+
     // Decode data.
-    int pos = 6;
+    int pos = 8;
     if ((data[3] & (uint8_t)128) == (uint8_t)128)
     {
-        memcpy(&logMode, &data[pos], 4); pos += 4;
+        memcpy(&mode, &data[pos], 4); pos += 4;
     }
     else
     {
-        logMode = 0;
+        mode = 0;
     }
     if ((data[3] & (uint8_t)64) == (uint8_t)64)
+    {
+        memcpy(&rectX, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        rectX = 0;
+    }
+    if ((data[3] & (uint8_t)32) == (uint8_t)32)
+    {
+        memcpy(&rectY, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        rectY = 0;
+    }
+    if ((data[3] & (uint8_t)16) == (uint8_t)16)
+    {
+        memcpy(&rectWidth, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        rectWidth = 0;
+    }
+    if ((data[3] & (uint8_t)8) == (uint8_t)8)
+    {
+        memcpy(&rectHeight, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        rectHeight = 0;
+    }
+    if ((data[3] & (uint8_t)4) == (uint8_t)4)
+    {
+        memcpy(&objectX, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        objectX = 0;
+    }
+    if ((data[3] & (uint8_t)2) == (uint8_t)2)
+    {
+        memcpy(&objectY, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        objectY = 0;
+    }
+    if ((data[3] & (uint8_t)1) == (uint8_t)1)
+    {
+        memcpy(&objectWidth, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        objectWidth = 0;
+    }
+
+
+
+    if ((data[4] & (uint8_t)128) == (uint8_t)128)
+    {
+        memcpy(&objectHeight, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        objectHeight = 0;
+    }
+    if ((data[4] & (uint8_t)64) == (uint8_t)64)
+    {
+        memcpy(&lostModeFrameCounter, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        lostModeFrameCounter = 0;
+    }
+    if ((data[4] & (uint8_t)32) == (uint8_t)32)
+    {
+        memcpy(&frameCounter, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        frameCounter = 0;
+    }
+    if ((data[4] & (uint8_t)16) == (uint8_t)16)
+    {
+        memcpy(&frameWidth, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        frameWidth = 0;
+    }
+    if ((data[4] & (uint8_t)8) == (uint8_t)8)
+    {
+        memcpy(&frameHeight, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        frameHeight = 0;
+    }
+    if ((data[4] & (uint8_t)4) == (uint8_t)4)
+    {
+        memcpy(&searchWindowWidth, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        searchWindowWidth = 0;
+    }
+    if ((data[4] & (uint8_t)2) == (uint8_t)2)
+    {
+        memcpy(&searchWindowHeight, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        searchWindowHeight = 0;
+    }
+    if ((data[4] & (uint8_t)1) == (uint8_t)1)
+    {
+        memcpy(&searchWindowX, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        searchWindowX = 0;
+    }
+
+
+
+    if ((data[5] & (uint8_t)128) == (uint8_t)128)
+    {
+        memcpy(&searchWindowY, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        searchWindowY = 0;
+    }
+    if ((data[5] & (uint8_t)64) == (uint8_t)64)
+    {
+        memcpy(&lostModeOption, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        lostModeOption = 0;
+    }
+    if ((data[5] & (uint8_t)32) == (uint8_t)32)
     {
         memcpy(&frameBufferSize, &data[pos], 4); pos += 4;
     }
@@ -295,132 +493,90 @@ bool cr::detector::ObjectDetectorParams::decode(uint8_t* data)
     {
         frameBufferSize = 0;
     }
-    if ((data[3] & (uint8_t)32) == (uint8_t)32)
+    if ((data[5] & (uint8_t)16) == (uint8_t)16)
     {
-        memcpy(&minObjectWidth, &data[pos], 4); pos += 4;
+        memcpy(&maxFramesInLostMode, &data[pos], 4); pos += 4;
     }
     else
     {
-        minObjectWidth = 0;
+        maxFramesInLostMode = 0;
     }
-    if ((data[3] & (uint8_t)16) == (uint8_t)16)
+    if ((data[5] & (uint8_t)8) == (uint8_t)8)
     {
-        memcpy(&maxObjectWidth, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        maxObjectWidth = 0;
-    }
-    if ((data[3] & (uint8_t)8) == (uint8_t)8)
-    {
-        memcpy(&minObjectHeight, &data[pos], 4); pos += 4;
+        memcpy(&processedFrameId, &data[pos], 4); pos += 4;
     }
     else
     {
-        minObjectHeight = 0;
+        processedFrameId = 0;
     }
-    if ((data[3] & (uint8_t)4) == (uint8_t)4)
+    if ((data[5] & (uint8_t)4) == (uint8_t)4)
     {
-        memcpy(&maxObjectHeight, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        maxObjectHeight = 0;
-    }
-    if ((data[3] & (uint8_t)2) == (uint8_t)2)
-    {
-        memcpy(&minXSpeed, &data[pos], 4); pos += 4;
+        memcpy(&frameId, &data[pos], 4); pos += 4;
     }
     else
     {
-        minXSpeed = 0.0f;
+        frameId = 0;
     }
-    if ((data[3] & (uint8_t)1) == (uint8_t)1)
+    if ((data[5] & (uint8_t)2) == (uint8_t)2)
     {
-        memcpy(&maxXSpeed, &data[pos], 4); pos += 4;
+        memcpy(&velX, &data[pos], 4); pos += 4;
     }
     else
     {
-        maxXSpeed = 0.0f;
+        velX = 0.0f;
+    }
+    if ((data[5] & (uint8_t)1) == (uint8_t)1)
+    {
+        memcpy(&velY, &data[pos], 4); pos += 4;
+    }
+    else
+    {
+        velY = 0.0f;
     }
 
 
 
-    if ((data[4] & (uint8_t)128) == (uint8_t)128)
+    if ((data[6] & (uint8_t)128) == (uint8_t)128)
     {
-        memcpy(&minYSpeed, &data[pos], 4); pos += 4;
+        memcpy(&detectionProbability, &data[pos], 4); pos += 4;
     }
     else
     {
-        minYSpeed = 0.0f;
+        detectionProbability = 0.0f;
     }
-    if ((data[4] & (uint8_t)64) == (uint8_t)64)
+    if ((data[6] & (uint8_t)64) == (uint8_t)64)
     {
-        memcpy(&maxYSpeed, &data[pos], 4); pos += 4;
+        rectAutoSize = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
     {
-        maxYSpeed = 0.0f;
+        rectAutoSize = false;
     }
-    if ((data[4] & (uint8_t)32) == (uint8_t)32)
+    if ((data[6] & (uint8_t)32) == (uint8_t)32)
     {
-        memcpy(&xDetectionCriteria, &data[pos], 4); pos += 4;
+        rectAutoPosition = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
     {
-        xDetectionCriteria = 0;
+        rectAutoPosition = false;
     }
-    if ((data[4] & (uint8_t)16) == (uint8_t)16)
+    if ((data[6] & (uint8_t)16) == (uint8_t)16)
     {
-        memcpy(&yDetectionCriteria, &data[pos], 4); pos += 4;
+       multipleThreads = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
     {
-        yDetectionCriteria = 0;
+        multipleThreads = false;
     }
-    if ((data[4] & (uint8_t)8) == (uint8_t)8)
+    if ((data[6] & (uint8_t)8) == (uint8_t)8)
     {
-        memcpy(&resetCriteria, &data[pos], 4); pos += 4;
+        memcpy(&numChannels, &data[pos], 4); pos += 4;
     }
     else
     {
-        resetCriteria = 0;
+        numChannels = 0;
     }
-    if ((data[4] & (uint8_t)4) == (uint8_t)4)
-    {
-        memcpy(&sensitivity, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        sensitivity = 0.0f;
-    }
-    if ((data[4] & (uint8_t)2) == (uint8_t)2)
-    {
-        memcpy(&scaleFactor, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        scaleFactor = 0;
-    }
-    if ((data[4] & (uint8_t)1) == (uint8_t)1)
-    {
-        memcpy(&numThreads, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        numThreads = 0;
-    }
-
-
-    if ((data[5] & (uint8_t)128) == (uint8_t)128)
-    {
-        memcpy(&processingTimeMks, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        processingTimeMks = 0;
-    }
-    if ((data[5] & (uint8_t)64) == (uint8_t)64)
+    if ((data[6] & (uint8_t)4) == (uint8_t)4)
     {
         memcpy(&type, &data[pos], 4); pos += 4;
     }
@@ -428,15 +584,15 @@ bool cr::detector::ObjectDetectorParams::decode(uint8_t* data)
     {
         type = 0;
     }
-    if ((data[5] & (uint8_t)32) == (uint8_t)32)
+    if ((data[6] & (uint8_t)2) == (uint8_t)2)
     {
-        enable = data[pos] == 0x00 ? false : true; pos += 1;
+        memcpy(&processingTimeMks, &data[pos], 4); pos += 4;
     }
     else
     {
-        enable = false;
+        processingTimeMks = 0;
     }
-    if ((data[5] & (uint8_t)16) == (uint8_t)16)
+    if ((data[6] & (uint8_t)1) == (uint8_t)1)
     {
         memcpy(&custom1, &data[pos], 4); pos += 4;
     }
@@ -444,7 +600,8 @@ bool cr::detector::ObjectDetectorParams::decode(uint8_t* data)
     {
         custom1 = 0.0f;
     }
-    if ((data[5] & (uint8_t)8) == (uint8_t)8)
+
+    if ((data[7] & (uint8_t)128) == (uint8_t)128)
     {
         memcpy(&custom2, &data[pos], 4); pos += 4;
     }
@@ -452,61 +609,27 @@ bool cr::detector::ObjectDetectorParams::decode(uint8_t* data)
     {
         custom2 = 0.0f;
     }
-    if ((data[5] & (uint8_t)4) == (uint8_t)4)
+    if ((data[7] & (uint8_t)64) == (uint8_t)64)
     {
-        memcpy(&custom3, &data[pos], 4); pos += 4;
+        memcpy(&custom3, &data[pos], 4);
     }
     else
     {
         custom3 = 0.0f;
     }
-    if ((data[5] & (uint8_t)2) == (uint8_t)2)
-    {
-        memcpy(&minDetectionProbability, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        minDetectionProbability = 0.0f;
-    }
-    if ((data[5] & (uint8_t)1) == (uint8_t)1)
-    {
-        int numObjects = 0;
-        memcpy(&numObjects, &data[pos], 4); pos += 4;
-        objects.clear();
-        for (int i = 0; i < numObjects; ++i)
-        {
-            cr::detector::Object obj;
-            memcpy(&obj.id, &data[pos], 4); pos += 4;
-            memcpy(&obj.type, &data[pos], 4); pos += 4;
-            memcpy(&obj.width, &data[pos], 4); pos += 4;
-            memcpy(&obj.height, &data[pos], 4); pos += 4;
-            memcpy(&obj.x, &data[pos], 4); pos += 4;
-            memcpy(&obj.y, &data[pos], 4); pos += 4;
-            memcpy(&obj.vX, &data[pos], 4); pos += 4;
-            memcpy(&obj.vY, &data[pos], 4); pos += 4;
-            memcpy(&obj.p, &data[pos], 4); pos += 4;
-            objects.push_back(obj);
-        }
-    }
-    else
-    {
-        objects.clear();
-    }
-
-    initString = "";
-
+    
     return true;
 }
 
 
 
-void cr::detector::ObjectDetector::encodeSetParamCommand(
-        uint8_t* data, int& size, ObjectDetectorParam id, float value)
+void cr::vtracker::VTracker::encodeSetParamCommand(
+        uint8_t* data, int& size, cr::vtracker::VTrackerParam id, float value)
 {
     // Fill header.
     data[0] = 0x01;
-    data[1] = OBJECT_DETECTOR_MAJOR_VERSION;
-    data[2] = OBJECT_DETECTOR_MINOR_VERSION;
+    data[1] = VTRACKER_MAJOR_VERSION;
+    data[2] = VTRACKER_MINOR_VERSION;
 
     // Fill data.
     int paramId = (int)id;
@@ -517,48 +640,63 @@ void cr::detector::ObjectDetector::encodeSetParamCommand(
 
 
 
-void cr::detector::ObjectDetector::encodeCommand(uint8_t* data,
-                                   int& size,
-                                   cr::detector::ObjectDetectorCommand id)
+void cr::vtracker::VTracker::encodeCommand(
+        uint8_t* data, int& size, VTrackerCommand id,
+        float arg1, float arg2, float arg3)
 {
     // Fill header.
     data[0] = 0x00;
-    data[1] = OBJECT_DETECTOR_MAJOR_VERSION;
-    data[2] = OBJECT_DETECTOR_MINOR_VERSION;
+    data[1] = VTRACKER_MAJOR_VERSION;
+    data[2] = VTRACKER_MINOR_VERSION;
 
     // Fill data.
     int commandId = (int)id;
     memcpy(&data[3], &commandId, 4);
-    size = 7;
+    memcpy(&data[7], &arg1, 4);
+    memcpy(&data[11], &arg2, 4);
+    memcpy(&data[15], &arg3, 4);
+    size = 19;
 }
 
 
 
-int cr::detector::ObjectDetector::decodeCommand(uint8_t* data,
-                                  int size,
-                                  cr::detector::ObjectDetectorParam& paramId,
-                                  cr::detector::ObjectDetectorCommand& commandId,
-                                  float& value)
+int cr::vtracker::VTracker::decodeCommand(
+                            uint8_t* data,
+                            int size,
+                            VTrackerParam& paramId,
+                            VTrackerCommand& commandId,
+                            float& value1,
+                            float& value2,
+                            float& value3)
 {
     // Check size.
-    if (size < 7)
+    if (size < 11)
         return -1;
 
     // Check version.
-    if (data[1] != OBJECT_DETECTOR_MAJOR_VERSION ||
-        data[2] != OBJECT_DETECTOR_MINOR_VERSION)
+    if (data[1] != VTRACKER_MAJOR_VERSION ||
+        data[2] != VTRACKER_MINOR_VERSION)
         return -1;
 
     // Extract data.
     int id = 0;
     memcpy(&id, &data[3], 4);
-    value = 0.0f;
-
+    value1 = 0.0f;
+    value2 = 0.0f;
+    value3 = 0.0f;
 
     // Check command type.
     if (data[0] == 0x00)
     {
-        commandId = (ObjectDetectorCommand)id;
+        // Check size.
+        if (size != 19)
+            return false;
+
+        // Decode command ID and arguments.
+        commandId = (VTrackerCommand)id;
+        memcpy(&value1, &data[7], 4);
+        memcpy(&value2, &data[11], 4);
+        memcpy(&value3, &data[15], 4);
         return 0;
     }
     else if (data[0] == 0x01)
@@ -567,8 +705,8 @@ int cr::detector::ObjectDetector::decodeCommand(uint8_t* data,
         if (size != 11)
             return false;
 
-        paramId = (ObjectDetectorParam)id;
-        memcpy(&value, &data[7], 4);
+        paramId = (VTrackerParam)id;
+        memcpy(&value1, &data[7], 4);
         return 1;
     }
 

@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "Frame.h"
 #include "ConfigReader.h"
 
@@ -34,14 +33,17 @@ typedef struct VTrackerParamsMask
     bool lostModeOption{true};
     bool frameBufferSize{true};
     bool maxFramesInLostMode{true};
-    bool trackerFrameId{true};
-    bool bufferFrameId{true};
+    bool processedFrameId{true};
+    bool frameId{true};
     bool velX{true};
     bool velY{true};
     bool detectionProbability{true};
     bool rectAutoSize{true};
     bool rectAutoPosition{true};
+    bool multipleThreads{true};
+    bool numChannels{true};
     bool type{true};
+    bool processingTimeMks{true};
     bool custom1{true};
     bool custom2{true};
     bool custom3{true};
@@ -50,7 +52,7 @@ typedef struct VTrackerParamsMask
 
 
 /**
- * @brief Video tracker params class.
+ * @brief Video tracker params and processing results class.
  */
 class VTrackerParams
 {
@@ -96,21 +98,27 @@ public:
     /// Maximum number of frames in LOST mode to auto reset of algorithm.
     int maxFramesInLostMode{128};
     /// ID of last processed frame in frame buffer.
-    int trackerFrameId{0};
+    int processedFrameId{0};
     /// ID of last added frame to frame buffer.
-    int bufferFrameId{0};
+    int frameId{0};
     /// Horizontal velocity of object on video frames ( pixel/frame ).
     float velX{0.0f};
     /// Vertical velocity of object on video frames ( pixel/frame ).
     float velY{0.0f};
     /// Estimated probability of object detection.
     float detectionProbability{0.0f};
-    /// Use tracking rectangle auto size flag: 0 - no use, 1 - use.
+    /// Use tracking rectangle auto size flag: false - no use, true - use.
     bool rectAutoSize{false};
-    /// Use tracking rectangle auto position: 0 - no use, 1 - use.
+    /// Use tracking rectangle auto position: false - no use, true - use.
     bool rectAutoPosition{false};
+    /// Use multiple threads for calculations.
+    bool multipleThreads{false};
+    /// Number of channels for processing. E.g., number of color channels.
+    int numChannels{3};
     /// Tracker type. Depends on implementation.
     int type{0};
+    /// Processing time for last frame, mks.
+    int processingTimeMks{0};
     /// Custom parameter. Depends on implementation.
     float custom1{0.0f};
     /// Custom parameter. Depends on implementation.
@@ -128,6 +136,8 @@ public:
                   maxFramesInLostMode,
                   rectAutoSize,
                   rectAutoPosition,
+                  multipleThreads,
+                  numChannels,
                   type,
                   custom1,
                   custom2,
@@ -158,253 +168,90 @@ public:
 
 
 
-
-
 /**
- * @brief Object data structure.
+ * @brief Video tracker commands enum.
  */
-typedef struct Object
+enum class VTrackerCommand
 {
-    /// Object ID. Must be uniques for particular object.
-    int id{0};
-    /// Object type. Depends on implementation.
-    int type{0};
-    /// Object rectangle width, pixels.
-    int width{0};
-    /// Object rectangle height, pixels.
-    int height{0};
-    /// Object rectangle top-left horizontal coordinate, pixels.
-    int x{0};
-    /// Object rectangle top-left vertical coordinate, pixels.
-    int y{0};
-    /// Horizontal component of object velocity, +-pixels/frame.
-    float vX{0.0f};
-    /// Vertical component of object velocity, +-pixels/frame.
-    float vY{0.0f};
-    /// Detection probability from 0 (minimum) to 1 (maximum).
-    float p{0.0f};
-} Object;
-
-
-
-/**
- * @brief Object detector params mask.
- */
-typedef struct ObjectDetectorParamsMask
-{
-    bool logMode{true};
-    bool frameBufferSize{true};
-    bool minObjectWidth{true};
-    bool maxObjectWidth{true};
-    bool minObjectHeight{true};
-    bool maxObjectHeight{true};
-    bool minXSpeed{true};
-    bool maxXSpeed{true};
-    bool minYSpeed{true};
-    bool maxYSpeed{true};
-    bool minDetectionProbability{true};
-    bool xDetectionCriteria{true};
-    bool yDetectionCriteria{true};
-    bool resetCriteria{true};
-    bool sensitivity{true};
-    bool scaleFactor{true};
-    bool numThreads{true};
-    bool processingTimeMks{true};
-    bool type{true};
-    bool enable{true};
-    bool custom1{true};
-    bool custom2{true};
-    bool custom3{true};
-    bool objects{true};
-} ObjectDetectorParamsMask;
-
-
-
-/**
- * @brief Object detector params class.
- */
-class ObjectDetectorParams
-{
-public:
-    /// Init string. Depends on implementation.
-    std::string initString{""};
-    /// Logging mode. Values: 0 - Disable, 1 - Only file,
-    /// 2 - Only terminal (console), 3 - File and terminal (console).
-    int logMode{0};
-    /// Frame buffer size. Depends on implementation.
-    int frameBufferSize{1};
-    /// Minimum object width to be detected, pixels. To be detected object's
-    /// width must be >= minObjectWidth.
-    int minObjectWidth{4};
-    /// Maximum object width to be detected, pixels. To be detected object's
-    /// width must be <= maxObjectWidth.
-    int maxObjectWidth{128};
-    /// Minimum object height to be detected, pixels. To be detected object's
-    /// height must be >= minObjectHeight.
-    int minObjectHeight{4};
-    /// Maximum object height to be detected, pixels. To be detected object's
-    /// height must be <= maxObjectHeight.
-    int maxObjectHeight{128};
-    /// Minimum object's horizontal speed to be detected, pixels/frame. To be
-    /// detected object's horizontal speed must be >= minXSpeed.
-    float minXSpeed{0.0f};
-    /// Maximum object's horizontal speed to be detected, pixels/frame. To be
-    /// detected object's horizontal speed must be <= maxXSpeed.
-    float maxXSpeed{30.0f};
-    /// Minimum object's vertical speed to be detected, pixels/frame. To be
-    /// detected object's vertical speed must be >= minYSpeed.
-    float minYSpeed{0.0f};
-    /// Maximum object's vertical speed to be detected, pixels/frame. To be
-    /// detected object's vertical speed must be <= maxYSpeed.
-    float maxYSpeed{30.0f};
-    /// Probability threshold from 0 to 1. To be detected object detection
-    /// probability must be >= minDetectionProbability.
-    float minDetectionProbability{0.5f};
-    /// Horizontal track detection criteria, frames. By default shows how many
-    /// frames the objects must move in any(+/-) horizontal direction to be
-    /// detected.
-    int xDetectionCriteria{1};
-    /// Vertical track detection criteria, frames. By default shows how many
-    /// frames the objects must move in any(+/-) vertical direction to be
-    /// detected.
-    int yDetectionCriteria{1};
-    /// Track reset criteria, frames. By default shows how many
-    /// frames the objects should be not detected to be excluded from results.
-    int resetCriteria{1};
-    /// Detection sensitivity. Depends on implementation. Default from 0 to 1.
-    float sensitivity{0.04f};
-    /// Frame scaling factor for processing purposes. Reduce the image size by
-    /// scaleFactor times horizontally and vertically for faster processing.
-    int scaleFactor{1};
-    /// Num threads. Number of threads for parallel computing.
-    int numThreads{1};
-    /// Processing time for last frame, mks.
-    int processingTimeMks{0};
-    /// Algorithm type. Depends on implementation.
-    int type{0};
-    /// Mode. Default: false - Off, on - On.
-    bool enable{true};
-    /// Custom parameter. Depends on implementation.
-    float custom1{0.0f};
-    /// Custom parameter. Depends on implementation.
-    float custom2{0.0f};
-    /// Custom parameter. Depends on implementation.
-    float custom3{0.0f};
-    /// List of detected objects.
-    std::vector<Object> objects;
-
-    JSON_READABLE(ObjectDetectorParams,
-                  initString,
-                  logMode,
-                  frameBufferSize,
-                  minObjectWidth,
-                  maxObjectWidth,
-                  minObjectHeight,
-                  maxObjectHeight,
-                  minXSpeed,
-                  maxXSpeed,
-                  minYSpeed,
-                  maxYSpeed,
-                  minDetectionProbability,
-                  xDetectionCriteria,
-                  yDetectionCriteria,
-                  resetCriteria,
-                  sensitivity,
-                  scaleFactor,
-                  numThreads,
-                  type,
-                  enable,
-                  custom1,
-                  custom2,
-                  custom3);
-
-    /**
-     * @brief operator =
-     * @param src Source object.
-     * @return ObjectDetectorParams object.
-     */
-    ObjectDetectorParams& operator= (const ObjectDetectorParams& src);
-
-    /**
-     * @brief Encode params. Method doesn't encode initString.
-     * @param data Pointer to data buffer.
-     * @param size Size of data.
-     * @param mask Pointer to parameters mask.
-     */
-    void encode(uint8_t* data, int& size,
-                ObjectDetectorParamsMask* mask = nullptr);
-
-    /**
-     * @brief Decode params. Method doesn't decode initString;
-     * @param data Pointer to data.
-     * @return TRUE is params decoded or FALSE if not.
-     */
-    bool decode(uint8_t* data);
+    /// Object capture. Arguments:
+    /// arg1 - Capture rectangle center X coordinate. -1 - default coordinate.
+    /// arg2 - Capture rectangle center Y coordinate. -1 - default coordinate.
+    /// arg3 - frame ID. -1 - Capture on last frame.
+    CAPTURE = 1,
+    /// Object capture command. Arguments:
+    /// arg1 - Capture rectangle center X coordinate, percents of frame width.
+    /// arg2 - Capture rectangle center Y coordinate, percents of frame width.
+    CAPTURE_PERCENTS,
+    /// Reset command. No arguments.
+    RESET,
+    /// Set INERTIAL mode. No arguments.
+    SET_INERTIAL_MODE,
+    /// Set LOST mode. No arguments.
+    SET_LOST_MODE,
+    /// Set STATIC mode. No arguments.
+    SET_STATIC_MODE,
+    /// Adjust tracking rectangle size automatically once. No arguments.
+    ADJUST_RECT_SIZE,
+    /// Adjust tracking rectangle position automatically once. No arguments.
+    ADJUST_RECT_POSITION,
+    /// Move tracking rectangle (change position). Arguments:
+    /// arg1 - add to X coordinate, pixels. 0 - no change.
+    /// arg2 - add to Y coordinate, pixels. 0 - no change.
+    MOVE_RECT,
+    /// Set tracking rectangle position in FREE mode. Arguments:
+    /// arg1 - Rectangle center X coordinate.
+    /// arg2 - Rectangle center Y coordinate.
+    SET_RECT_POSITION,
+    /// Set tracking rectangle position in FREE mode in percents of frame size.
+    /// Arguments:
+    /// arg1 - Rectangle center X coordinate, percents of frame width.
+    /// arg2 - Rectangle center X coordinate, percents of frame height.
+    SET_RECT_POSITION_PERCENTS,
+    /// Move search window (change position). Arguments:
+    /// arg1 - add to X coordinate, pixels. 0 - no change.
+    /// arg2 - add to Y coordinate, pixels. 0 - no change.
+    MOVE_SEARCH_WINDOW,
+    /// Set search window position. Arguments:
+    /// arg1 - Search window center X coordinate.
+    /// arg2 - Search window center Y coordinate.
+    SET_SEARCH_WINDOW_POSITION,
+    /// Set search window position in percents of frame size. Arguments:
+    /// arg1 - Search window center X coordinate, percents of frame width.
+    /// arg2 - Search window center X coordinate, percents of frame height.
+    SET_SEARCH_WINDOW_POSITION_PERCENTS,
+    /// Change tracking rectagle size. Arguments:
+    /// arg1 - horizontal size add, pixels.
+    /// arg2 - vertical size add, pixels.
+    CHANGE_RECT_SIZE
 };
 
 
 
 /**
- * @brief Enum of object detector params.
+ * @brief Video tracker params enum. Params whick defines algorithm parameters.
  */
-enum class ObjectDetectorParam
+enum class VTrackerParam
 {
-    /// Logging mode. Values: 0 - Disable, 1 - Only file,
-    /// 2 - Only terminal (console), 3 - File and terminal (console).
-    LOG_MODE = 1,
-    /// Frame buffer size. Depends on implementation.
+    /// Width of search window.
+    SEARCH_WINDOW_WIDTH = 1,
+    /// Height of search window.
+    SEARCH_WINDOW_HEIGHT,
+    /// Option for LOST mode.
+    LOST_MODE_OPTION,
+    /// Size of frame buffer (number of frames to store).
     FRAME_BUFFER_SIZE,
-    /// Minimum object width to be detected, pixels. To be detected object's
-    /// width must be >= MIN_OBJECT_WIDTH.
-    MIN_OBJECT_WIDTH,
-    /// Maximum object width to be detected, pixels. To be detected object's
-    /// width must be <= MAX_OBJECT_WIDTH.
-    MAX_OBJECT_WIDTH,
-    /// Minimum object height to be detected, pixels. To be detected object's
-    /// height must be >= MIN_OBJECT_HEIGHT.
-    MIN_OBJECT_HEIGHT,
-    /// Maximum object height to be detected, pixels. To be detected object's
-    /// height must be <= MAX_OBJECT_HEIGHT.
-    MAX_OBJECT_HEIGHT,
-    /// Minimum object's horizontal speed to be detected, pixels/frame. To be
-    /// detected object's horizontal speed must be >= MIN_X_SPEED.
-    MIN_X_SPEED,
-    /// Maximum object's horizontal speed to be detected, pixels/frame. To be
-    /// detected object's horizontal speed must be <= MAX_X_SPEED.
-    MAX_X_SPEED,
-    /// Minimum object's vertical speed to be detected, pixels/frame. To be
-    /// detected object's vertical speed must be >= MIN_Y_SPEED.
-    MIN_Y_SPEED,
-    /// Maximum object's vertical speed to be detected, pixels/frame. To be
-    /// detected object's vertical speed must be <= MAX_Y_SPEED.
-    MAX_Y_SPEED,
-    /// Probability threshold from 0 to 1. To be detected object detection
-    /// probability must be >= MIN_DETECTION_PROPABILITY.
-    MIN_DETECTION_PROPABILITY,
-    /// Horizontal track detection criteria, frames. By default shows how many
-    /// frames the objects must move in any(+/-) horizontal direction to be
-    /// detected.
-    X_DETECTION_CRITERIA,
-    /// Vertical track detection criteria, frames. By default shows how many
-    /// frames the objects must move in any(+/-) vertical direction to be
-    /// detected.
-    Y_DETECTION_CRITERIA,
-    /// Track reset criteria, frames. By default shows how many
-    /// frames the objects should be not detected to be excluded from results.
-    RESET_CRITERIA,
-    /// Detection sensitivity. Depends on implementation. Default from 0 to 1.
-    SENSITIVITY,
-    /// Frame scaling factor for processing purposes. Reduce the image size by
-    /// scaleFactor times horizontally and vertically for faster processing.
-    SCALE_FACTOR,
-    /// Num threads. Number of threads for parallel computing.
-    NUM_THREADS,
-    /// Processing time for last frame, mks.
-    PROCESSING_TIME_MKS,
-    /// Algorithm type. Depends on implementation.
+    /// Maximum number of frames in LOST mode to auto reset of algorithm.
+    MAX_FRAMES_IN_LOST_MODE,
+    /// Use tracking rectangle auto size flag: 0 - no use, 1 - use.
+    RECT_AUTO_SIZE,
+    /// Use tracking rectangle auto position: 0 - no use, 1 - use.
+    RECT_AUTO_POSITION,
+    /// Use multiple threads for calculations. 0 - one thread, 1 - multiple.
+    MULTIPLE_THREADS,
+    /// Number of channels for processing. E.g., number of color channels.
+    NUM_CHANNELS,
+    /// Tracker type. Depends on implementation.
     TYPE,
-    /// Mode. Default: 0 - Off, 1 - On.
-    MODE,
     /// Custom parameter. Depends on implementation.
     CUSTOM_1,
     /// Custom parameter. Depends on implementation.
@@ -416,24 +263,9 @@ enum class ObjectDetectorParam
 
 
 /**
- * @brief Object detector commands.
+ * @brief Video tracker interface class.
  */
-enum class ObjectDetectorCommand
-{
-    /// Reset.
-    RESET = 1,
-    /// Enable.
-    ON,
-    /// Disable.
-    OFF
-};
-
-
-
-/**
- * @brief Object detector interface class.
- */
-class ObjectDetector
+class VTracker
 {
 public:
 
@@ -444,52 +276,60 @@ public:
     static std::string getVersion();
 
     /**
-     * @brief Init object detector. All params will be set.
-     * @param params Parameters structure.
-     * @return TRUE if the object detector init or FALSE if not.
+     * @brief Init video tracker. All params will be set.
+     * @param params Parameters class.
+     * @return TRUE if the video tracker init or FALSE if not.
      */
-    virtual bool initObjectDetector(ObjectDetectorParams& params) = 0;
+    virtual bool initVTracker(VTrackerParams& params) = 0;
 
     /**
-     * @brief Set object detector param.
+     * @brief Set video tracker param.
      * @param id Param ID.
      * @param value Param value to set.
      * @return TRUE if param was set of FALSE.
      */
-    virtual bool setParam(ObjectDetectorParam id, float value) = 0;
+    virtual bool setParam(VTrackerParam id, float value) = 0;
 
     /**
-     * @brief Get object detector param value.
+     * @brief Get video tracker param value.
      * @param id Param ID.
      * @return Param value or -1.
      */
-    virtual float getParam(ObjectDetectorParam id) = 0;
+    virtual float getParam(VTrackerParam id) = 0;
 
     /**
-     * @brief Get object detector params structure.
-     * @return Object detector params structure.
+     * @brief Get video tracker params (results).
+     * @return Video tracker params structure.
      */
-    virtual ObjectDetectorParams getParams() = 0;
-
-    /**
-     * @brief Get list of objects.
-     * @return List of objects. If no detected object the list will be empty.
-     */
-    virtual std::vector<Object> getObjects() = 0;
+    virtual VTrackerParams getParams() = 0;
 
     /**
      * @brief Execute command.
      * @param id Command ID.
+     * @param arg1 First argument. Value depends on command ID.
+     * @param arg2 Second argument. Value depends on command ID.
+     * @param arg3 Third argument. Value depends on command ID.
      * @return TRUE if the command accepted or FALSE if not.
      */
-    virtual bool executeCommand(ObjectDetectorCommand id) = 0;
+    virtual bool executeCommand(VTrackerCommand id,
+                                float arg1 = 0,
+                                float arg2 = 0,
+                                float arg3 = 0) = 0;
 
     /**
-     * @brief Perform detection.
+     * @brief Process frame. Must be used for each input video frame.
      * @param frame Source video frame.
      * @return TRUE if video frame was processed or FALSE if not.
      */
-    virtual bool detect(cr::video::Frame& frame) = 0;
+    virtual bool processFrame(cr::video::Frame& frame) = 0;
+
+    /**
+     * @brief Get image of internal surfaces.
+     * @param type Type of image to get. Depends on implementation.
+     * @param image Pointer to image buffer. Must be 128x128 = 16384 bytes.
+     * @return TRUE if the image ready or FALSE.
+     */
+    virtual bool getImage(int type, cr::video::Frame& image) = 0;
 
     /**
      * @brief Encode set param command.
@@ -499,16 +339,20 @@ public:
      * @param value Param value.
      */
     static void encodeSetParamCommand(
-            uint8_t* data, int& size, ObjectDetectorParam id, float value);
+            uint8_t* data, int& size, VTrackerParam id, float value);
 
     /**
      * @brief Encode command.
      * @param data Pointer to data buffer. Must have size >= 11.
      * @param size Size of encoded data.
      * @param id Command ID.
+     * @param arg1 First argument. Value depends on command ID.
+     * @param arg2 Second argument. Value depends on command ID.
+     * @param arg3 Third argument. Value depends on command ID.
      */
     static void encodeCommand(
-            uint8_t* data, int& size, ObjectDetectorCommand id);
+            uint8_t* data, int& size, VTrackerCommand id,
+            float arg1 = 0, float arg2 = 0, float arg3 = 0);
 
     /**
      * @brief Decode command.
@@ -516,14 +360,18 @@ public:
      * @param size Size of data.
      * @param paramId Output command ID.
      * @param commandId Output command ID.
-     * @param value Param or command value.
+     * @param value1 Param or command argument 1.
+     * @param value2 Command argument 2.
+     * @param value3 Command argument 3.
      * @return 0 - command decoded, 1 - set param command decoded, -1 - error.
      */
     static int decodeCommand(uint8_t* data,
                              int size,
-                             ObjectDetectorParam& paramId,
-                             ObjectDetectorCommand& commandId,
-                             float& value);
+                             VTrackerParam& paramId,
+                             VTrackerCommand& commandId,
+                             float& value1,
+                             float& value2,
+                             float& value3);
 };
 }
 }
