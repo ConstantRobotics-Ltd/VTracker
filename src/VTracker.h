@@ -327,9 +327,8 @@ public:
      * @brief Get image of internal surfaces.
      * @param type Type of image to get. Depends on implementation.
      * @param image Pointer to image buffer. Must be 128x128 = 16384 bytes.
-     * @return TRUE if the image ready or FALSE.
      */
-    virtual bool getImage(int type, cr::video::Frame& image) = 0;
+    virtual void getImage(int type, cr::video::Frame& image) = 0;
 
     /**
      * @brief Encode set param command.

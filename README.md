@@ -44,7 +44,7 @@
 
 # Overview
 
-**ObjectDetector** C++ library provides standard interface as well defines data structures and rules for different object detectors (motion detectors, events detectors, neural networks etc.). **ObjectDetector** interface class doesn't do anything, just provides interface and defines data structures. Different object detector classes inherit interface form **ObjectDetector** C++ class. **ObjectDetector.h** file contains **ObjectDetectorParams** class, **ObjectDetectorCommand** enum, **ObjectDetectorParam** enum and includes **ObjectDetector** class declaration. **ObjectDetectorParams** class contains object detector params, list of detected objects and includes methods to encode and decode params.  **ObjectDetectorCommand** enum contains IDs of commands. **ObjectDetectorParam** enum contains IDs of params. All object detectors should include params and commands listed in **ObjectDetector.h** file. ObjectDetector class dependency: [**Frame**](https://github.com/ConstantRobotics-Ltd/Frame) class which describes video frame structure and pixel formats, [**ConfigReader**](https://github.com/ConstantRobotics-Ltd/ConfigReader) class which provides methods to work with JSON structures (read/write).
+**VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class doesn't do anything, just provides interface and defines data structures. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains **VTrackerParams** class, **VTrackerCommand** enum, **VTrackerParam** enum and includes **VTracker** class declaration. **VTrackerParams** class contains video tracker params and includes methods to encode and decode params.  **VTrackerCommand** enum contains IDs of commands. **VTrackerParam** enum contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. Сlass dependency: [**Frame**](https://github.com/ConstantRobotics-Ltd/Frame) class which describes video frame structure and pixel formats, [**ConfigReader**](https://github.com/ConstantRobotics-Ltd/ConfigReader) class which provides methods to work with JSON structures (read/write).
 
 
 
@@ -52,23 +52,40 @@
 
 **Table 1** - Library versions.
 
-| Version | Release date | What's new                              |
-| ------- | ------------ | --------------------------------------- |
-| 1.0.0   | 17.07.2023   | First version.                          |
-| 1.0.1   | 17.07.2023   | - 3rdparty variable name mistake fixed. |
+| Version | Release date | What's new     |
+| ------- | ------------ | -------------- |
+| 1.0.0   | 19.07.2023   | First version. |
 
 
 
-# ObjectDetector interface class description
+# Required operating principles
+
+The video tracker shall provide the following principle of operation: each video frame without dropping must be send to the tracker for processing regardless of the current tracker operation mode. If the tracker is not in tracking mode, the tracker does not perform frame processing, but the processing function must be called by user.
 
 
 
-## ObjectDetector class declaration
 
-**ObjectDetector** interface class declared in **ObjectDetector.h** file. Class declaration:
+
+![logo](_static/algorithm_principle.png)
+
+
+
+
+
+
+
+
+
+# VTracker interface class description
+
+
+
+## VTracker class declaration
+
+**VTracker** interface class declared in **VTracker.h** file. Class declaration:
 
 ```cpp
-class ObjectDetector
+class VTracker
 {
 public:
     /**
@@ -77,46 +94,53 @@ public:
      */
     static std::string getVersion();
     /**
-     * @brief Init object detector. All params will be set.
-     * @param params Parameters structure.
-     * @return TRUE if the object detector init or FALSE if not.
+     * @brief Init video tracker. All params will be set.
+     * @param params Parameters class.
+     * @return TRUE if the video tracker init or FALSE if not.
      */
-    virtual bool initObjectDetector(ObjectDetectorParams& params) = 0;
+    virtual bool initVTracker(VTrackerParams& params) = 0;
     /**
-     * @brief Set object detector param.
+     * @brief Set video tracker param.
      * @param id Param ID.
      * @param value Param value to set.
      * @return TRUE if param was set of FALSE.
      */
-    virtual bool setParam(ObjectDetectorParam id, float value) = 0;
+    virtual bool setParam(VTrackerParam id, float value) = 0;
     /**
-     * @brief Get object detector param value.
+     * @brief Get video tracker param value.
      * @param id Param ID.
      * @return Param value or -1.
      */
-    virtual float getParam(ObjectDetectorParam id) = 0;
+    virtual float getParam(VTrackerParam id) = 0;
     /**
-     * @brief Get object detector params structure.
-     * @return Object detector params structure.
+     * @brief Get video tracker params (results).
+     * @return Video tracker params structure.
      */
-    virtual ObjectDetectorParams getParams() = 0;
-    /**
-     * @brief Get list of objects.
-     * @return List of objects. If no detected object the list will be empty.
-     */
-    virtual std::vector<Object> getObjects() = 0;
+    virtual VTrackerParams getParams() = 0;
     /**
      * @brief Execute command.
      * @param id Command ID.
+     * @param arg1 First argument. Value depends on command ID.
+     * @param arg2 Second argument. Value depends on command ID.
+     * @param arg3 Third argument. Value depends on command ID.
      * @return TRUE if the command accepted or FALSE if not.
      */
-    virtual bool executeCommand(ObjectDetectorCommand id) = 0;
+    virtual bool executeCommand(VTrackerCommand id,
+                                float arg1 = 0,
+                                float arg2 = 0,
+                                float arg3 = 0) = 0;
     /**
-     * @brief Perform detection.
+     * @brief Process frame. Must be used for each input video frame.
      * @param frame Source video frame.
      * @return TRUE if video frame was processed or FALSE if not.
      */
-    virtual bool detect(cr::video::Frame& frame) = 0;
+    virtual bool processFrame(cr::video::Frame& frame) = 0;
+    /**
+     * @brief Get image of internal surfaces.
+     * @param type Type of image to get. Depends on implementation.
+     * @param image Pointer to image buffer. Must be 128x128 = 16384 bytes.
+     */
+    virtual void getImage(int type, cr::video::Frame& image) = 0;
     /**
      * @brief Encode set param command.
      * @param data Pointer to data buffer. Must have size >= 11.
@@ -125,29 +149,37 @@ public:
      * @param value Param value.
      */
     static void encodeSetParamCommand(
-            uint8_t* data, int& size, ObjectDetectorParam id, float value);
+            uint8_t* data, int& size, VTrackerParam id, float value);
     /**
      * @brief Encode command.
      * @param data Pointer to data buffer. Must have size >= 11.
      * @param size Size of encoded data.
      * @param id Command ID.
+     * @param arg1 First argument. Value depends on command ID.
+     * @param arg2 Second argument. Value depends on command ID.
+     * @param arg3 Third argument. Value depends on command ID.
      */
     static void encodeCommand(
-            uint8_t* data, int& size, ObjectDetectorCommand id);
+            uint8_t* data, int& size, VTrackerCommand id,
+            float arg1 = 0, float arg2 = 0, float arg3 = 0);
     /**
      * @brief Decode command.
      * @param data Pointer to command data.
      * @param size Size of data.
      * @param paramId Output command ID.
      * @param commandId Output command ID.
-     * @param value Param or command value.
+     * @param value1 Param or command argument 1.
+     * @param value2 Command argument 2.
+     * @param value3 Command argument 3.
      * @return 0 - command decoded, 1 - set param command decoded, -1 - error.
      */
     static int decodeCommand(uint8_t* data,
                              int size,
-                             ObjectDetectorParam& paramId,
-                             ObjectDetectorCommand& commandId,
-                             float& value);
+                             VTrackerParam& paramId,
+                             VTrackerCommand& commandId,
+                             float& value1,
+                             float& value2,
+                             float& value3);
 };
 ```
 
@@ -155,54 +187,54 @@ public:
 
 ## getVersion method
 
-**getVersion()** method returns string of current version of **ObjectDetector** class. Particular object detector class can have it's own **getVersion()** method. Method declaration:
+**getVersion()** method returns string of current version of **VTracker** class. Particular video tracker class can have it's own **getVersion()** method. Method declaration:
 
 ```cpp
 static std::string getVersion();
 ```
 
-Method can be used without **ObjectDetector** class instance:
+Method can be used without **VTracker** class instance:
 
 ```cpp
-std::cout << "ObjectDetector class version: " << ObjectDetector::getVersion() << std::endl;
+cout << "VTracker class version: " << VTracker::getVersion() << endl;
 ```
 
 Console output:
 
 ```bash
-ObjectDetector class version: 1.0.0
+VTracker class version: 1.0.0
 ```
 
 
 
-## initObjectDetector method
+## initVTracker method
 
-**initObjectDetector(...)** method initializes object detector. Method declaration:
+**initVTracker(...)** method initializes video tracker by set of params. Method declaration:
 
 ```cpp
-virtual bool initObjectDetector(ObjectDetectorParams& params) = 0;
+virtual bool initVTracker(VTrackerParams& params) = 0;
 ```
 
 | Parameter | Value                                                        |
 | --------- | ------------------------------------------------------------ |
-| params    | Object detector parameters class. Object detector should initialize all parameters listed in ObjectDetectorParams. |
+| params    | Video tracker params class. Video tracker should initialize all parameters listed in VTrackerParams. |
 
-**Returns:** TRUE if the object detector initialized or FALSE if not.
+**Returns:** TRUE if the video tracker initialized or FALSE if not.
 
 
 
 ## setParam method
 
-**setParam(...)** method designed to set new object detector parameter value. Method declaration:
+**setParam(...)** method designed to set new video tracker parameter value. Method declaration:
 
 ```cpp
-virtual bool setParam(ObjectDetectorParam id, float value) = 0;
+virtual bool setParam(VTrackerParam id, float value) = 0;
 ```
 
-| Parameter | Description                                             |
-| --------- | ------------------------------------------------------- |
-| id        | Parameter ID according to **ObjectDetectorParam** enum. |
-| value     | Parameter value. Value depends on parameter ID.         |
+| Parameter | Description                                       |
+| --------- | ------------------------------------------------- |
+| id        | Parameter ID according to **VTrackerParam** enum. |
+| value     | Parameter value. Value depends on parameter ID.   |
 
 **Returns:** TRUE if the parameter was set or FALSE if not.
 
@@ -210,15 +242,15 @@ virtual bool setParam(ObjectDetectorParam id, float value) = 0;
 
 ## getParam method
 
-**getParam(...)** method designed to obtain object detector parameter value. Method declaration:
+**getParam(...)** method designed to obtain video tracker parameter value. Method declaration:
 
 ```cpp
-virtual float getParam(ObjectDetectorParam id) = 0;
+virtual float getParam(VTrackerParam id) = 0;
 ```
 
-| Parameter | Description                                             |
-| --------- | ------------------------------------------------------- |
-| id        | Parameter ID according to **ObjectDetectorParam** enum. |
+| Parameter | Description                                       |
+| --------- | ------------------------------------------------- |
+| id        | Parameter ID according to **VTrackerParam** enum. |
 
 **Returns:** parameter value or -1 of the parameters doesn't exist in particular object detector class.
 
@@ -226,82 +258,88 @@ virtual float getParam(ObjectDetectorParam id) = 0;
 
 ## getParams method
 
-**getParams(...)** method designed to obtain object detector params structures as well a list of detected objects. Method declaration:
+**getParams(...)** method designed to obtain video tracker params structures as well as tracking results. Method declaration:
 
 ```cpp
-virtual ObjectDetectorParams getParams() = 0;
+virtual VTrackerParams getParams() = 0;
 ```
 
-**Returns:** object detector parameters structure (see **ObjectDetectorParams** class description).
-
-
-
-## getObjects method
-
-**getObjects()** method designed to obtain list of detected objects. User can object list of detected objects via **getParams(...)** method as well. Method declaration:
-
-```cpp
-virtual std::vector<Object> getObjects() = 0;
-```
-
-**Returns:** list of detected objects (see **Object** class description). If no detected object the list will be empty.
+**Returns:** video tracker parameters class (see **VTrackerParams** class description).
 
 
 
 ## executeCommand method
 
-**executeCommand(...)** method designed to execute object detector command. Method declaration:
+**executeCommand(...)** method designed to execute video tracker command. Method declaration:
 
 ```cpp
-virtual bool executeCommand(ObjectDetectorCommand id) = 0;
+virtual bool executeCommand(VTrackerCommand id, float arg1 = 0, float arg2 = 0, float arg3 = 0) = 0;
 ```
 
-| Parameter | Description                                             |
-| --------- | ------------------------------------------------------- |
-| id        | Command ID according to **ObjectDetectorCommand** enum. |
+| Parameter | Description                                       |
+| --------- | ------------------------------------------------- |
+| id        | Command ID according to **VTrackerCommand** enum. |
+| arg1      | First argument. Value depends on command ID.      |
+| arg2      | Second argument. Value depends on command ID.     |
+| arg3      | Third argument. Value depends on command ID.      |
 
 **Returns:** TRUE is the command was executed or FALSE if not.
 
 
 
-## detect method
+## processFrame method
 
-**detect(...)** method designed to perform detection algorithm. Method declaration:
+**processFrame(...)** method designed to process video frame. Method declaration:
 
 ```cpp
-virtual bool detect(cr::video::Frame& frame) = 0;
+virtual bool processFrame(cr::video::Frame& frame) = 0;
 ```
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| frame     | Video frame for processing. Object detector processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see **Frame** class description). |
+| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see **Frame** class description). |
 
-**Returns:** TRUE is the video frame was processed FALSE if not. If object detector disabled (see **ObjectDetectorParam** enum description) the method should return TRUE.
+**Returns:** TRUE is the video frame was processed FALSE if not. If video tracker not in tracking mode (see **VTrackerParam** enum description) the method should return TRUE.
+
+
+
+## getImage method
+
+**getImage(...)** method designed to obtain images of internal matrixes. Depends on implementation. Method declaration:
+
+```cpp
+virtual void getImage(int type, cr::video::Frame& image) = 0;
+```
+
+| Parameter | Description                                           |
+| --------- | ----------------------------------------------------- |
+| type      | Image type. Depends on implementation.                |
+| frame     | Output frame. Pixel format depends on implementation. |
 
 
 
 ## encodeSetParamCommand method
 
-**encodeSetParamCommand(...)** static method designed to encode command to change any parameter for remote object detector. To control object detector remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **ObjectDetector** class contains static methods for encoding the control command. The **ObjectDetector** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeSetParamCommand(...)** designed to encode SET_PARAM command. Method declaration:
+**encodeSetParamCommand(...)** static method designed to encode command to change any parameter for remote video tracker. To control video tracker remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **VTracker** class contains static methods for encoding the control command. The **VTracker** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeSetParamCommand(...)** designed to encode SET_PARAM command. Method declaration:
 
 ```cpp
-static void encodeSetParamCommand(uint8_t* data, int& size, ObjectDetectorParam id, float value);
+static void encodeSetParamCommand(uint8_t* data, int& size, VTrackerParam id, float value);
 ```
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | data      | Pointer to data buffer for encoded command. Must have size >= 11. |
 | size      | Size of encoded data. Will be 11 bytes.                      |
-| id        | Parameter ID according to **ObjectDetectorParam** enum.      |
-| value     | Parameter value. Value depends on parameter ID.              |
+| id        | Parameter ID according to **VTrackerParam** enum.            |
+| value     | Parameter value. Value depends on parameter ID (see **VTrackerParam** enum description). |
 
 **SET_PARAM** command format:
 
 | Byte | Value | Description                                        |
 | ---- | ----- | -------------------------------------------------- |
 | 0    | 0x01  | SET_PARAM command header value.                    |
-| 1    | 0x01  | Major version of ObjectDetector class.             |
-| 2    | 0x00  | Minor version of ObjectDetector class.             |
+| 1    | 0x01  | Major version of VTracker class.                   |
+| 2    | 0x00  | Minor version of VTracker class.                   |
 | 3    | id    | Parameter ID **int32_t** in Little-endian format.  |
 | 4    | id    | Parameter ID **int32_t** in Little-endian format.  |
 | 5    | id    | Parameter ID **int32_t** in Little-endian format.  |
@@ -311,113 +349,207 @@ static void encodeSetParamCommand(uint8_t* data, int& size, ObjectDetectorParam 
 | 9    | value | Parameter value **float** in Little-endian format. |
 | 10   | value | Parameter value **float** in Little-endian format. |
 
-**encodeSetParamCommand(...)** is static and used without **ObjectDetector** class instance. This method used on client side (control system). Command encoding example:
+**encodeSetParamCommand(...)** is static and used without **VTracker** class instance. This method used on client side (control system). Command encoding example:
 
 ```cpp
-// Buffer for encoded data.
-uint8_t data[11];
-// Size of encoded data.
-int size = 0;
-// Random parameter value.
-float outValue = (float)(rand() % 20);
-// Encode command.
-ObjectDetector::encodeSetParamCommand(data, size, ObjectDetectorParam::MIN_OBJECT_WIDTH, outValue);
+outValue = (float)(rand() % 20);
+VTracker::encodeSetParamCommand(
+data, size, VTrackerParam::MULTIPLE_THREADS, outValue);
 ```
 
 
 
 ## encodeCommand method
 
-**encodeCommand(...)** static method designed to encode command for remote object detector. To control object detector remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **ObjectDetector** class contains static methods for encoding the control command. The **ObjectDetector** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeCommand(...)** designed to encode COMMAND (action command). Method declaration:
+**encodeCommand(...)** static method designed to encode command for remote video tracker. To control video tracker remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **VTracker** class contains static methods for encoding the control command. The **VTracker** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeCommand(...)** designed to encode COMMAND (action command). Method declaration:
 
 ```cpp
-static void encodeCommand(uint8_t* data, int& size, ObjectDetectorCommand id);
+static void encodeCommand(uint8_t* data, int& size, VTrackerCommand id, float arg1 = 0, float arg2 = 0, float arg3 = 0);
 ```
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| data      | Pointer to data buffer for encoded command. Must have size >= 11. |
-| size      | Size of encoded data. Will be 11 bytes.                      |
-| id        | Command ID according to **ObjectDetectorCommand** enum.      |
+| data      | Pointer to data buffer for encoded command. Must have size >= 19. |
+| size      | Size of encoded data. Will be 19 bytes.                      |
+| id        | Command ID according to **VTrackerCommand** enum.            |
+| arg1      | First argument. Value depends on command ID (see **VTrackerCommand** enum description). |
+| arg2      | Second argument. Value depends on command ID (see **VTrackerCommand** enum description). |
+| arg3      | Third argument. Value depends on command ID (see **VTrackerCommand** enum description). |
 
 **COMMAND** format:
 
-| Byte | Value | Description                                     |
-| ---- | ----- | ----------------------------------------------- |
-| 0    | 0x00  | COMMAND header value.                           |
-| 1    | 0x01  | Major version of ObjectDetector class.          |
-| 2    | 0x00  | Minor version of ObjectDetector class.          |
-| 3    | id    | Command ID **int32_t** in Little-endian format. |
-| 4    | id    | Command ID **int32_t** in Little-endian format. |
-| 5    | id    | Command ID **int32_t** in Little-endian format. |
-| 6    | id    | Command ID **int32_t** in Little-endian format. |
+| Byte | Value | Description                                                  |
+| ---- | ----- | ------------------------------------------------------------ |
+| 0    | 0x00  | COMMAND header value.                                        |
+| 1    | 0x01  | Major version of ObjectDetector class.                       |
+| 2    | 0x00  | Minor version of ObjectDetector class.                       |
+| 3    | id    | Command ID **int32_t** in Little-endian format.              |
+| 4    | id    | Command ID **int32_t** in Little-endian format.              |
+| 5    | id    | Command ID **int32_t** in Little-endian format.              |
+| 6    | id    | Command ID **int32_t** in Little-endian format.              |
+| 7    | arg1  | First command argument value **float** in Little-endian format. |
+| 8    | arg1  | First command argument value **float** in Little-endian format. |
+| 9    | arg1  | First command argument value **float** in Little-endian format. |
+| 10   | arg1  | First command argument value **float** in Little-endian format. |
+| 11   | arg2  | Second command argument value **float** in Little-endian format. |
+| 12   | arg2  | Second command argument value **float** in Little-endian format. |
+| 13   | arg2  | Second command argument value **float** in Little-endian format. |
+| 14   | arg2  | Second command argument value **float** in Little-endian format. |
+| 15   | arg3  | Third command argument value **float** in Little-endian format. |
+| 16   | arg3  | Third command argument value **float** in Little-endian format. |
+| 17   | arg3  | Third command argument value **float** in Little-endian format. |
+| 18   | arg3  | Third command argument value **float** in Little-endian format. |
 
-**encodeCommand(...)** is static and used without **ObjectDetector** class instance. This method used on client side (control system). Command encoding example:
+**encodeCommand(...)** is static and used without **VTracker** class instance. This method used on client side (control system). Command encoding example:
 
 ```cpp
-// Buffer for encoded data.
-uint8_t data[11];
-// Size of encoded data.
+uint8_t data[1024];
 int size = 0;
-// Encode command.
-ObjectDetector::encodeCommand(data, size, ObjectDetectorCommand::RESET);
+float outValue = (float)(rand() % 20);
+float arg1 = (float)(rand() % 20);
+float arg2 = (float)(rand() % 20);
+float arg3 = (float)(rand() % 20);
+VTracker::encodeCommand(data, size, VTrackerCommand::CAPTURE, arg1, arg2, arg3);
 ```
 
 
 
 ## decodeCommand method
 
-**decodeCommand(...)** static method designed to decode command on object detector side (edge device). Method declaration:
+**decodeCommand(...)** static method designed to decode command on video tracker side (edge device). Method declaration:
 
 ```cpp
-static int decodeCommand(uint8_t* data, int size, ObjectDetectorParam& paramId, ObjectDetectorCommand& commandId, float& value);
+static int decodeCommand(uint8_t* data, int size, VTrackerParam& paramId, VTrackerCommand& commandId, float& value1, float& value2, float& value3);
 ```
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | data      | Pointer to input command.                                    |
 | size      | Size of command. Should be 11 bytes.                         |
-| paramId   | Parameter ID according to **ObjectDetectorParam** enum. After decoding SET_PARAM command the method will return parameter ID. |
-| commandId | Command ID according to **ObjectDetectorCommand** enum. After decoding COMMAND the method will return command ID. |
-| value     | Parameter value (after decoding SET_PARAM command).          |
+| paramId   | Parameter ID according to **VTrackerParam** enum. After decoding SET_PARAM command the method will return parameter ID. |
+| commandId | Command ID according to **VTrackerCommand** enum. After decoding COMMAND the method will return command ID. |
+| value1    | Parameter value or first command argument 1. After decoding SET_PARAM and COMMAND. |
+| value2    | Parameter value or second command argument 1. After decoding COMMAND. |
+| value3    | Parameter value or third command argument 1. After decoding COMMAND. |
 
 **Returns:** **0** - in case decoding COMMAND, **1** - in case decoding SET_PARAM command or **-1** in case errors.
+
+**decodeCommand(...)** is static and used without **VTracker** class instance. Command decoding example:
+
+```cpp
+// Encode command.
+uint8_t data[1024];
+int size = 0;
+float outValue = (float)(rand() % 20);
+float arg1 = (float)(rand() % 20);
+float arg2 = (float)(rand() % 20);
+float arg3 = (float)(rand() % 20);
+VTracker::encodeCommand(data, size, VTrackerCommand::CAPTURE, arg1, arg2, arg3);
+
+// Decode command.
+VTrackerCommand commandId;
+VTrackerParam paramId;
+float inArg1 = (float)(rand() % 20);
+float inArg2 = (float)(rand() % 20);
+float inArg3 = (float)(rand() % 20);
+if (VTracker::decodeCommand(data, size, paramId, commandId, inArg1, inArg2, inArg3) != 0)
+{
+    cout << "Command not decoded" << endl;
+    return false;
+}
+```
 
 
 
 # Data structures
 
-**ObjectDetector.h** file defines IDs for parameters (**ObjectDetectorParam** enum) and IDs for commands (**ObjectDetectorCommand** enum).
+**VTracker.h** file defines IDs for parameters (**VTrackerParam** enum) and IDs for commands (**VTrackerCommand** enum).
 
 
 
-## ObjectDetectorCommand enum
+## VTrackerCommand enum
 
 Enum declaration:
 
 ```cpp
-enum class ObjectDetectorCommand
+enum class VTrackerCommand
 {
-    /// Reset.
-    RESET = 1,
-    /// Enable.
-    ON,
-    /// Disable.
-    OFF
+    /// Object capture. Arguments:
+    /// arg1 - Capture rectangle center X coordinate. -1 - default coordinate.
+    /// arg2 - Capture rectangle center Y coordinate. -1 - default coordinate.
+    /// arg3 - frame ID. -1 - Capture on last frame.
+    CAPTURE = 1,
+    /// Object capture command. Arguments:
+    /// arg1 - Capture rectangle center X coordinate, percents of frame width.
+    /// arg2 - Capture rectangle center Y coordinate, percents of frame width.
+    CAPTURE_PERCENTS,
+    /// Reset command. No arguments.
+    RESET,
+    /// Set INERTIAL mode. No arguments.
+    SET_INERTIAL_MODE,
+    /// Set LOST mode. No arguments.
+    SET_LOST_MODE,
+    /// Set STATIC mode. No arguments.
+    SET_STATIC_MODE,
+    /// Adjust tracking rectangle size automatically once. No arguments.
+    ADJUST_RECT_SIZE,
+    /// Adjust tracking rectangle position automatically once. No arguments.
+    ADJUST_RECT_POSITION,
+    /// Move tracking rectangle (change position). Arguments:
+    /// arg1 - add to X coordinate, pixels. 0 - no change.
+    /// arg2 - add to Y coordinate, pixels. 0 - no change.
+    MOVE_RECT,
+    /// Set tracking rectangle position in FREE mode. Arguments:
+    /// arg1 - Rectangle center X coordinate.
+    /// arg2 - Rectangle center Y coordinate.
+    SET_RECT_POSITION,
+    /// Set tracking rectangle position in FREE mode in percents of frame size.
+    /// Arguments:
+    /// arg1 - Rectangle center X coordinate, percents of frame width.
+    /// arg2 - Rectangle center X coordinate, percents of frame height.
+    SET_RECT_POSITION_PERCENTS,
+    /// Move search window (change position). Arguments:
+    /// arg1 - add to X coordinate, pixels. 0 - no change.
+    /// arg2 - add to Y coordinate, pixels. 0 - no change.
+    MOVE_SEARCH_WINDOW,
+    /// Set search window position. Arguments:
+    /// arg1 - Search window center X coordinate.
+    /// arg2 - Search window center Y coordinate.
+    SET_SEARCH_WINDOW_POSITION,
+    /// Set search window position in percents of frame size. Arguments:
+    /// arg1 - Search window center X coordinate, percents of frame width.
+    /// arg2 - Search window center X coordinate, percents of frame height.
+    SET_SEARCH_WINDOW_POSITION_PERCENTS,
+    /// Change tracking rectagle size. Arguments:
+    /// arg1 - horizontal size add, pixels.
+    /// arg2 - vertical size add, pixels.
+    CHANGE_RECT_SIZE
 };
 ```
 
-**Table 2** - Object detector commands description. Some commands maybe unsupported by particular object detector class.
+**Table 2** - Video tracker commands description. Some commands maybe unsupported by particular video tracker class.
 
-| Command | Description              |
-| ------- | ------------------------ |
-| RESET   | Reset algorithm.         |
-| ON      | Enable object detector.  |
-| OFF     | Disable object detector. |
+| Command                             | Description                                                  |
+| ----------------------------------- | ------------------------------------------------------------ |
+| CAPTURE                             | Object capture. Arguments: arg1 - Capture rectangle center X coordinate. -1 - default coordinate, arg2 - Capture rectangle center Y coordinate. -1 - default coordinate, arg3 - frame ID. -1 - Capture on last frame. |
+| CAPTURE_PERCENTS                    |                                                              |
+| RESET                               |                                                              |
+| SET_INERTIAL_MODE                   |                                                              |
+| SET_LOST_MODE                       |                                                              |
+| SET_STATIC_MODE                     |                                                              |
+| ADJUST_RECT_SIZE                    |                                                              |
+| ADJUST_RECT_POSITION                |                                                              |
+| MOVE_RECT                           |                                                              |
+| SET_RECT_POSITION                   |                                                              |
+| SET_RECT_POSITION_PERCENTS          |                                                              |
+| MOVE_SEARCH_WINDOW                  |                                                              |
+| SET_SEARCH_WINDOW_POSITION          |                                                              |
+| SET_SEARCH_WINDOW_POSITION_PERCENTS |                                                              |
+| CHANGE_RECT_SIZE                    |                                                              |
 
 
 
-## ObjectDetectorParam enum
+## VTrackerParam enum
 
 Enum declaration:
 
