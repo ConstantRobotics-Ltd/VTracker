@@ -58,66 +58,102 @@ class VTrackerParams
 {
 public:
     /// Tracker mode index: 0 - FREE, 1 - TRACKING, 2 - INERTIAL, 3 - STATIC.
+    /// Set by video tracker according to processing results or after command
+    /// execution.
     int mode{0};
-    /// Tracking rectangle horizontal center position.
+    /// Tracking rectangle horizontal center position. Calculated by tracking
+    /// algorithm.
     int rectX{0};
-    /// Tracking rectangle vertical center position.
+    /// Tracking rectangle vertical center position. Calculated by tracking
+    /// algorithm.
     int rectY{0};
-    /// Tracking rectangle width.
+    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// tracking algorithm if rectAutoSize == true.
     int rectWidth{72};
-    /// Tracking rectangle height.
+    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// tracking algorithm if rectAutoSize == true.
     int rectHeight{72};
-    /// Estimated horizontal position of object center.
+    /// Estimated horizontal position of object center, pixels. Calculated by
+    /// video tracker.
     int objectX{0};
-    /// Estimated vertical position of object center.
+    /// Estimated vertical position of object center, pixels.Calculated by
+    /// video tracker.
     int objectY{0};
-    /// Estimated object width.
+    /// Estimated object width, pixels. Calculated by video tracker.
     int objectWidth{72};
-    /// Estimated object height.
+    /// Estimated object height, pixels. Calculated by video tracker.
     int objectHeight{72};
-    /// Frame counter in LOST mode.
+    /// Frame counter in LOST mode. After switching in LOST mode the video
+    /// tracker start counting from 0. After switching to another mode from
+    /// LOST mode the video tracker will reset this counter.
     int lostModeFrameCounter{0};
-    /// Counter for processed frames after capture object.
+    /// Counter for processed frames after capture object. After reset tracking
+    /// the video tracker will reset counter.
     int frameCounter{0};
-    /// Width of processed video frame.
+    /// Width of processed video frame. Set by video tracker after processing
+    /// first video frame.
     int frameWidth{0};
-    /// Height of processed video frame.
+    /// Height of processed video frame. Set by video tracker after processing
+    /// first video frame.
     int frameHeight{0};
-    /// Width of search window.
+    /// Width of search window, pixels. Set by user.
     int searchWindowWidth{256};
-    /// Height of search window.
+    /// Height of search window, pixels. Set by user.
     int searchWindowHeight{256};
-    /// Horizontal position of search window center.
+    /// Horizontal position of search window center. This position will be used
+    /// for next video frame. Usually it coincides with data tracking rectangle
+    /// center but can be set by user to move search window for new video frame.
     int searchWindowX{0};
-    /// Vertical position of search window center.
+    /// Vertical position of search window center. This position will be used
+    /// for next video frame. Usually it coinsides with data tracking rectangle
+    /// center but can be set by user to move search window for new video frame.
     int searchWindowY{0};
-    /// Option for LOST mode.
+    /// Option for LOST mode. Parameter that defines the behavior of the
+    /// tracking  algorithm in LOST mode. Default is 0. Possible values:
+    /// 0. In LOST mode, the coordinates of the center of the  tracking
+    ///    rectangle are not updated and remain the  same as before entering
+    ///    LOST mode.
+    /// 1. The coordinates of the center of the tracking  rectangle are updated
+    ///    based on the components  of the object’s speed calculated before
+    ///    going into  LOST mode. If the tracking rectangle “touches” the  edge
+    ///    of the video frame, the coordinate updating  for this component
+    ///    (horizontal or vertical) will stop.
+    /// 2. The coordinates of the center of the tracking  rectangle are
+    ///    updated based on the components  of the object’s speed calculated
+    ///    before going into  LOST mode. The tracking is reset if the center of 
+    ///    the tracking rectangle touches any of the edges of  the video frame.
     int lostModeOption{0};
-    /// Size of frame buffer (number of frames to store).
+    /// Size of frame buffer (number of frames to store). Set by user.
     int frameBufferSize{128};
-    /// Maximum number of frames in LOST mode to auto reset of algorithm.
+    /// Maximum number of frames in LOST mode to auto reset of algorithm. Set
+    /// by user.
     int maxFramesInLostMode{128};
-    /// ID of last processed frame in frame buffer.
+    /// ID of last processed frame in frame buffer. Set by video tracker.
     int processedFrameId{0};
-    /// ID of last added frame to frame buffer.
+    /// ID of last added frame to frame buffer. Set by video tracker.
     int frameId{0};
-    /// Horizontal velocity of object on video frames ( pixel/frame ).
+    /// Horizontal velocity of object on video frames (pixel/frame). Calculated
+    /// by video tracker.
     float velX{0.0f};
-    /// Vertical velocity of object on video frames ( pixel/frame ).
+    /// Vertical velocity of object on video frames (pixel/frame). Calculated
+    /// by video tracker. 
     float velY{0.0f};
-    /// Estimated probability of object detection.
+    /// Estimated probability of object detection. Calculated by video tracker.
     float detectionProbability{0.0f};
-    /// Use tracking rectangle auto size flag: false - no use, true - use.
+    /// Use tracking rectangle auto size flag: false - no use, true - use. Set
+    /// by user.
     bool rectAutoSize{false};
-    /// Use tracking rectangle auto position: false - no use, true - use.
+    /// Use tracking rectangle auto position: false - no use, true - use. Set
+    /// by user.
     bool rectAutoPosition{false};
-    /// Use multiple threads for calculations.
+    /// Use multiple threads for calculations. Set by user.
     bool multipleThreads{false};
-    /// Number of channels for processing. E.g., number of color channels.
+    /// Number of channels for processing. E.g., number of color channels. Set
+    /// by user.
     int numChannels{3};
-    /// Tracker type. Depends on implementation.
+    /// Tracker type. Depends on implementation. Set by user.
     int type{0};
-    /// Processing time for last frame, mks.
+    /// Processing time for last frame, mks. Calculated by video tracker.
     int processingTimeMks{0};
     /// Custom parameter. Depends on implementation.
     float custom1{0.0f};
@@ -219,7 +255,7 @@ enum class VTrackerCommand
     /// arg1 - Search window center X coordinate, percents of frame width.
     /// arg2 - Search window center X coordinate, percents of frame height.
     SET_SEARCH_WINDOW_POSITION_PERCENTS,
-    /// Change tracking rectagle size. Arguments:
+    /// Change tracking rectangle size. Arguments:
     /// arg1 - horizontal size add, pixels.
     /// arg2 - vertical size add, pixels.
     CHANGE_RECT_SIZE
@@ -232,25 +268,47 @@ enum class VTrackerCommand
  */
 enum class VTrackerParam
 {
-    /// Width of search window.
+    /// Width of search window, pixels. Set by user.
     SEARCH_WINDOW_WIDTH = 1,
-    /// Height of search window.
+    /// Height of search window, pixels. Set by user.
     SEARCH_WINDOW_HEIGHT,
-    /// Option for LOST mode.
+    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// tracking algorithm if rectAutoSize == true.
+    RECT_WIDTH,
+    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// tracking algorithm if rectAutoSize == true.
+    RECT_HEIGHT,
+    /// Option for LOST mode. Parameter that defines the behavior of the
+    /// tracking  algorithm in LOST mode. Default is 0. Possible values:
+    /// 0. In LOST mode, the coordinates of the center of the  tracking
+    ///    rectangle are not updated and remain the  same as before entering
+    ///    LOST mode.
+    /// 1. The coordinates of the center of the tracking  rectangle are updated
+    ///    based on the components  of the object’s speed calculated before
+    ///    going into  LOST mode. If the tracking rectangle “touches” the  edge
+    ///    of the video frame, the coordinate updating  for this component
+    ///    (horizontal or vertical) will stop.
+    /// 2. The coordinates of the center of the tracking  rectangle are
+    ///    updated based on the components  of the object’s speed calculated
+    ///    before going into  LOST mode. The tracking is reset if the center of 
+    ///    the tracking rectangle touches any of the edges of  the video frame.
     LOST_MODE_OPTION,
-    /// Size of frame buffer (number of frames to store).
+    /// Size of frame buffer (number of frames to store). Set by user.
     FRAME_BUFFER_SIZE,
-    /// Maximum number of frames in LOST mode to auto reset of algorithm.
+    /// Maximum number of frames in LOST mode to auto reset of algorithm. Set
+    /// by user.
     MAX_FRAMES_IN_LOST_MODE,
-    /// Use tracking rectangle auto size flag: 0 - no use, 1 - use.
+    /// Use tracking rectangle auto size flag: 0 - no use, 1 - use. Set by user.
     RECT_AUTO_SIZE,
-    /// Use tracking rectangle auto position: 0 - no use, 1 - use.
+    /// Use tracking rectangle auto position: 0 - no use, 1 - use. Set by user.
     RECT_AUTO_POSITION,
-    /// Use multiple threads for calculations. 0 - one thread, 1 - multiple.
+    /// Use multiple threads for calculations. 0 - one thread, 1 - multiple. Set
+    /// by user.
     MULTIPLE_THREADS,
-    /// Number of channels for processing. E.g., number of color channels.
+    /// Number of channels for processing. E.g., number of color channels. Set
+    /// by user.
     NUM_CHANNELS,
-    /// Tracker type. Depends on implementation.
+    /// Tracker type. Depends on implementation. Set by user.
     TYPE,
     /// Custom parameter. Depends on implementation.
     CUSTOM_1,
