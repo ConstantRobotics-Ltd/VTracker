@@ -339,13 +339,13 @@ bool encodeDecodeTest()
     // Encode data.
     uint8_t data[1024];
     int size = 0;
-    in.encode(data, size);
+    in.encode(data, 1024, size);
 
     cout << "Encoded data size: " << size << " bytes" << endl;
 
     // Decode data.
     VTrackerParams out;
-    if (!out.decode(data))
+    if (!out.decode(data, size))
     {
         cout << "Can't decode data" << endl;
         return false;
@@ -828,13 +828,13 @@ bool encodeDecodeWithMaskTest()
     // Encode data.
     uint8_t data[1024];
     int size = 0;
-    in.encode(data, size, &mask);
+    in.encode(data, 1024, size, &mask);
 
     cout << "Encoded data size: " << size << " bytes" << endl;
 
     // Decode data.
     VTrackerParams out;
-    if (!out.decode(data))
+    if (!out.decode(data, size))
     {
         cout << "Can't decode data" << endl;
         return false;

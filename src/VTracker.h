@@ -189,17 +189,21 @@ public:
     /**
      * @brief Encode params.
      * @param data Pointer to data buffer.
+     * @param bufferSize Data buffer size.
      * @param size Size of data.
      * @param mask Pointer to parameters mask.
+     * @return TRUE if data encoded (serialized) or FALSE if not.
      */
-    void encode(uint8_t* data, int& size, VTrackerParamsMask* mask = nullptr);
+    bool encode(uint8_t* data, int bufferSize,
+                int& size, VTrackerParamsMask* mask = nullptr);
 
     /**
      * @brief Decode params.
      * @param data Pointer to data.
+     * @param dataSize Data size.
      * @return TRUE is params decoded or FALSE if not.
      */
-    bool decode(uint8_t* data);
+    bool decode(uint8_t* data, int dataSize);
 };
 
 
@@ -429,6 +433,14 @@ public:
                              float& value1,
                              float& value2,
                              float& value3);
+
+    /**
+     * @brief Decode command.
+     * @param data Pointer to command data.
+     * @param size Size of data.
+     * @return TRUE if command decoded and executed or FALSE if not.
+     */
+    virtual bool decodeAndExecuteCommand(uint8_t* data, int size) = 0;
 };
 }
 }

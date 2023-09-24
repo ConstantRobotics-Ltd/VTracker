@@ -60,9 +60,17 @@ cr::vtracker::VTrackerParams &cr::vtracker::VTrackerParams::operator= (const cr:
 
 
 
-void cr::vtracker::VTrackerParams::encode(
-        uint8_t* data, int& size, cr::vtracker::VTrackerParamsMask* mask)
+bool cr::vtracker::VTrackerParams::encode(
+        uint8_t* data, int bufferSize,
+        int& size, cr::vtracker::VTrackerParamsMask* mask)
 {
+    // Check buffer size.
+    if (bufferSize < 135)
+    {
+        size = 0;
+        return false;
+    }
+
     // Encode version.
     int pos = 0;
     data[pos] = 0x02; pos += 1;
@@ -120,7 +128,7 @@ void cr::vtracker::VTrackerParams::encode(
 
         size = pos;
 
-        return;
+        return true;
     }
 
     // Prepare mask.
@@ -316,12 +324,18 @@ void cr::vtracker::VTrackerParams::encode(
     }
 
     size = pos;
+
+    return true;
 }
 
 
 
-bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
+bool cr::vtracker::VTrackerParams::decode(uint8_t* data, int dataSize)
 {
+    // Check data size.
+    if (dataSize < 8)
+        return false;
+
     // Check header.
     if (data[0] != 0x02)
         return false;
@@ -337,6 +351,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     int pos = 8;
     if ((data[3] & (uint8_t)128) == (uint8_t)128)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&mode, &data[pos], 4); pos += 4;
     }
     else
@@ -345,6 +361,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)64) == (uint8_t)64)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&rectX, &data[pos], 4); pos += 4;
     }
     else
@@ -353,6 +371,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)32) == (uint8_t)32)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&rectY, &data[pos], 4); pos += 4;
     }
     else
@@ -361,6 +381,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)16) == (uint8_t)16)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&rectWidth, &data[pos], 4); pos += 4;
     }
     else
@@ -369,6 +391,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)8) == (uint8_t)8)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&rectHeight, &data[pos], 4); pos += 4;
     }
     else
@@ -377,6 +401,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)4) == (uint8_t)4)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&objectX, &data[pos], 4); pos += 4;
     }
     else
@@ -385,6 +411,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)2) == (uint8_t)2)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&objectY, &data[pos], 4); pos += 4;
     }
     else
@@ -393,6 +421,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[3] & (uint8_t)1) == (uint8_t)1)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&objectWidth, &data[pos], 4); pos += 4;
     }
     else
@@ -404,6 +434,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
 
     if ((data[4] & (uint8_t)128) == (uint8_t)128)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&objectHeight, &data[pos], 4); pos += 4;
     }
     else
@@ -412,6 +444,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)64) == (uint8_t)64)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&lostModeFrameCounter, &data[pos], 4); pos += 4;
     }
     else
@@ -420,6 +454,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)32) == (uint8_t)32)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&frameCounter, &data[pos], 4); pos += 4;
     }
     else
@@ -428,6 +464,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)16) == (uint8_t)16)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&frameWidth, &data[pos], 4); pos += 4;
     }
     else
@@ -436,6 +474,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)8) == (uint8_t)8)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&frameHeight, &data[pos], 4); pos += 4;
     }
     else
@@ -444,6 +484,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)4) == (uint8_t)4)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&searchWindowWidth, &data[pos], 4); pos += 4;
     }
     else
@@ -452,6 +494,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)2) == (uint8_t)2)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&searchWindowHeight, &data[pos], 4); pos += 4;
     }
     else
@@ -460,6 +504,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[4] & (uint8_t)1) == (uint8_t)1)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&searchWindowX, &data[pos], 4); pos += 4;
     }
     else
@@ -471,6 +517,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
 
     if ((data[5] & (uint8_t)128) == (uint8_t)128)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&searchWindowY, &data[pos], 4); pos += 4;
     }
     else
@@ -479,6 +527,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)64) == (uint8_t)64)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&lostModeOption, &data[pos], 4); pos += 4;
     }
     else
@@ -487,6 +537,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)32) == (uint8_t)32)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&frameBufferSize, &data[pos], 4); pos += 4;
     }
     else
@@ -495,6 +547,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)16) == (uint8_t)16)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&maxFramesInLostMode, &data[pos], 4); pos += 4;
     }
     else
@@ -503,6 +557,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)8) == (uint8_t)8)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&processedFrameId, &data[pos], 4); pos += 4;
     }
     else
@@ -511,6 +567,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)4) == (uint8_t)4)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&frameId, &data[pos], 4); pos += 4;
     }
     else
@@ -519,6 +577,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)2) == (uint8_t)2)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&velX, &data[pos], 4); pos += 4;
     }
     else
@@ -527,6 +587,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[5] & (uint8_t)1) == (uint8_t)1)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&velY, &data[pos], 4); pos += 4;
     }
     else
@@ -538,6 +600,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
 
     if ((data[6] & (uint8_t)128) == (uint8_t)128)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&detectionProbability, &data[pos], 4); pos += 4;
     }
     else
@@ -546,6 +610,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)64) == (uint8_t)64)
     {
+        if (dataSize < pos + 1)
+            return false;
         rectAutoSize = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
@@ -554,6 +620,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)32) == (uint8_t)32)
     {
+        if (dataSize < pos + 1)
+            return false;
         rectAutoPosition = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
@@ -562,6 +630,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)16) == (uint8_t)16)
     {
+        if (dataSize < pos + 1)
+            return false;
        multipleThreads = data[pos] == 0x00 ? false : true; pos += 1;
     }
     else
@@ -570,6 +640,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)8) == (uint8_t)8)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&numChannels, &data[pos], 4); pos += 4;
     }
     else
@@ -578,6 +650,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)4) == (uint8_t)4)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&type, &data[pos], 4); pos += 4;
     }
     else
@@ -586,6 +660,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)2) == (uint8_t)2)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&processingTimeMks, &data[pos], 4); pos += 4;
     }
     else
@@ -594,6 +670,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[6] & (uint8_t)1) == (uint8_t)1)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&custom1, &data[pos], 4); pos += 4;
     }
     else
@@ -603,6 +681,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
 
     if ((data[7] & (uint8_t)128) == (uint8_t)128)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&custom2, &data[pos], 4); pos += 4;
     }
     else
@@ -611,6 +691,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data)
     }
     if ((data[7] & (uint8_t)64) == (uint8_t)64)
     {
+        if (dataSize < pos + 4)
+            return false;
         memcpy(&custom3, &data[pos], 4);
     }
     else

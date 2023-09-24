@@ -31,6 +31,7 @@ endif()
 ################################################################################
 SET(${PARENT}_VTRACKER                       ON  CACHE BOOL "" ${REWRITE_FORCE})
 SET(${PARENT}_VTRACKER_TEST                  ON  CACHE BOOL "" ${REWRITE_FORCE})
+SET(${PARENT}_VTRACKER_EXAMPLE               ON  CACHE BOOL "" ${REWRITE_FORCE})
 
 
 
@@ -45,4 +46,8 @@ endif()
 
 if (${PARENT}_VTRACKER_TEST)
     add_subdirectory(test)
+endif()
+
+if (${PARENT}_VTRACKER_EXAMPLE)
+    add_subdirectory(example)
 endif()
