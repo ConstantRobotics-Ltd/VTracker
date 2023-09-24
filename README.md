@@ -55,7 +55,7 @@
 | ------- | ------------ | ------------------------------------------------------------ |
 | 1.0.0   | 20.07.2023   | First version.                                               |
 | 1.1.0   | 10.08.2023   | - Data structures updated.                                   |
-| 1.2.0   | 24.09.2023   | - Updated encode(...) and decode(...) methods of VSourceParams.<br />- Added decodeAndExecuteCommand(...) method.<br />- Added example of video tracker implementation. |
+| 1.2.0   | 24.09.2023   | - Updated encode(...) and decode(...) methods of VTrackerParams.<br />- Added decodeAndExecuteCommand(...) method.<br />- Added example of video tracker implementation. |
 
 
 
