@@ -363,7 +363,7 @@ public:
      * @brief Get video tracker params (results).
      * @return Video tracker params structure.
      */
-    virtual VTrackerParams getParams() = 0;
+    virtual void getParams(VTrackerParams& params) = 0;
 
     /**
      * @brief Execute command.

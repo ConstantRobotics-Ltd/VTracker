@@ -202,9 +202,9 @@ float cr::vtracker::CustomVTracker::getParam(cr::vtracker::VTrackerParam id)
 
 
 
-cr::vtracker::VTrackerParams cr::vtracker::CustomVTracker::getParams()
+void cr::vtracker::CustomVTracker::getParams(VTrackerParams& params)
 {
-    return m_params;
+    params = m_params;
 }
 
 

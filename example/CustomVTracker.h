@@ -31,7 +31,7 @@ public:
     float getParam(VTrackerParam id);
 
     /// Get video tracker params (results).
-    VTrackerParams getParams();
+    void getParams(VTrackerParams& params);
 
     /// Execute command.
     bool executeCommand(VTrackerCommand id,

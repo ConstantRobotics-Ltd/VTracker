@@ -4,7 +4,7 @@
 
 # **VTracker interface C++ library**
 
-**v1.2.0**
+**v1.3.0**
 
 
 
@@ -56,6 +56,7 @@
 | 1.0.0   | 20.07.2023   | First version.                                               |
 | 1.1.0   | 10.08.2023   | - Data structures updated.                                   |
 | 1.2.0   | 24.09.2023   | - Updated encode(...) and decode(...) methods of VTrackerParams.<br />- Added decodeAndExecuteCommand(...) method.<br />- Added example of video tracker implementation. |
+| 1.3.0   | 26.09.2023   | - Signature of getParams(...) method changed.                |
 
 
 
@@ -144,7 +145,7 @@ public:
     virtual float getParam(VTrackerParam id) = 0;
 
     /// Get video tracker params (results).
-    virtual VTrackerParams getParams() = 0;
+    virtual void getParams(VTrackerParams& params) = 0;
 
     /// Execute command.
     virtual bool executeCommand(VTrackerCommand id,
@@ -259,10 +260,12 @@ virtual float getParam(VTrackerParam id) = 0;
 **getParams(...)** method returns video tracker params class and tracking results. The particular implementation of the video tracker must provide thread-safe **getParams(...)** method call. This means that the **getParams(...)** method can be safely called from any thread. Method declaration:
 
 ```cpp
-virtual VTrackerParams getParams() = 0;
+virtual void getParams(VTrackerParams& params) = 0;
 ```
 
-**Returns:** video tracker parameters class (see [**VTrackerParams class**](#VTrackerParams-class-description) description).
+| Parameter | Description                                             |
+| --------- | ------------------------------------------------------- |
+| params    | Video tracker parameters class object (VTrackerParams). |
 
 
 
@@ -337,7 +340,7 @@ static void encodeSetParamCommand(uint8_t* data, int& size, VTrackerParam id, fl
 | ---- | ----- | -------------------------------------------------- |
 | 0    | 0x01  | SET_PARAM command header value.                    |
 | 1    | 0x01  | Major version of VTracker class.                   |
-| 2    | 0x02  | Minor version of VTracker class.                   |
+| 2    | 0x03  | Minor version of VTracker class.                   |
 | 3    | id    | Parameter ID **int32_t** in Little-endian format.  |
 | 4    | id    | Parameter ID **int32_t** in Little-endian format.  |
 | 5    | id    | Parameter ID **int32_t** in Little-endian format.  |
@@ -380,7 +383,7 @@ static void encodeCommand(uint8_t* data, int& size, VTrackerCommand id, float ar
 | ---- | ----- | ------------------------------------------------------------ |
 | 0    | 0x00  | COMMAND header value.                                        |
 | 1    | 0x01  | Major version of VTracker class.                             |
-| 2    | 0x02  | Minor version of VTracker class.                             |
+| 2    | 0x03  | Minor version of VTracker class.                             |
 | 3    | id    | Command ID **int32_t** in Little-endian format.              |
 | 4    | id    | Command ID **int32_t** in Little-endian format.              |
 | 5    | id    | Command ID **int32_t** in Little-endian format.              |
@@ -1154,7 +1157,7 @@ public:
     float getParam(VTrackerParam id);
 
     /// Get video tracker params (results).
-    VTrackerParams getParams();
+    void getParams(VTrackerParams& params);
 
     /// Execute command.
     bool executeCommand(VTrackerCommand id,
