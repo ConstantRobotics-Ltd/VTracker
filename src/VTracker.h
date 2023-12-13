@@ -332,6 +332,11 @@ class VTracker
 public:
 
     /**
+     * @brief Class destructor.
+     */
+    virtual ~VTracker();
+
+    /**
      * @brief Get string of current library version.
      * @return String of current library version.
      */
