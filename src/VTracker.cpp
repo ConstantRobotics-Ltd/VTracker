@@ -3,6 +3,13 @@
 
 
 
+cr::vtracker::VTracker::~VTracker()
+{
+
+}
+
+
+
 std::string cr::vtracker::VTracker::getVersion()
 {
     return VTRACKER_VERSION;
