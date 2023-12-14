@@ -58,7 +58,7 @@
 | 1.2.0   | 24.09.2023   | - Updated encode(...) and decode(...) methods of VTrackerParams.<br />- Added decodeAndExecuteCommand(...) method.<br />- Added example of video tracker implementation. |
 | 1.3.0   | 26.09.2023   | - Signature of getParams(...) method changed.                |
 | 1.3.1   | 13.11.2023   | - Frame class updated.                                       |
-| 1.4.1   | 13.12.2023   | - Virtual destructor added.                                       |
+| 1.4.1   | 13.12.2023   | - Virtual destructor added. <br />- Frame class updated.     |
 
 
 
