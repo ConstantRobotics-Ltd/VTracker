@@ -67,10 +67,10 @@ public:
     /// Tracking rectangle vertical center position. Calculated by tracking
     /// algorithm.
     int rectY{0};
-    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// Tracking rectangle width, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     int rectWidth{72};
-    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// Tracking rectangle height, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     int rectHeight{72};
     /// Estimated horizontal position of object center, pixels. Calculated by
@@ -276,10 +276,10 @@ enum class VTrackerParam
     SEARCH_WINDOW_WIDTH = 1,
     /// Height of search window, pixels. Set by user.
     SEARCH_WINDOW_HEIGHT,
-    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// Tracking rectangle width, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     RECT_WIDTH,
-    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// Tracking rectangle height, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     RECT_HEIGHT,
     /// Option for LOST mode. Parameter that defines the behavior of the

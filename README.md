@@ -581,10 +581,10 @@ enum class VTrackerParam
     SEARCH_WINDOW_WIDTH = 1,
     /// Height of search window, pixels. Set by user.
     SEARCH_WINDOW_HEIGHT,
-    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// Tracking rectangle width, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     RECT_WIDTH,
-    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// Tracking rectangle height, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     RECT_HEIGHT,
     /// Option for LOST mode. Parameter that defines the behavior of the
@@ -634,8 +634,8 @@ enum class VTrackerParam
 | ----------------------- | ------------ | ------------------------------------------------------------ |
 | SEARCH_WINDOW_WIDTH     | read / write | Width of search window, pixels. Set by user. (see **Required operating principles**). |
 | SEARCH_WINDOW_HEIGHT    | read / write | Height of search window, pixels. Set by user. (see **Required operating principles**). |
-| RECT_WIDTH              | read / write | Tracking rectangle width, pixels. (see **Required operating principles**). Set in user or can be changed by tracking algorithm if RECT_AUTO_SIZE == 1. |
-| RECT_HEIGHT             | read / write | Tracking rectangle height, pixels (see **Required operating principles**). Set in user or can be changed by tracking algorithm if RECT_AUTO_SIZE == 1. |
+| RECT_WIDTH              | read / write | Tracking rectangle width, pixels. (see **Required operating principles**). Set by user or can be changed by tracking algorithm if RECT_AUTO_SIZE == 1. |
+| RECT_HEIGHT             | read / write | Tracking rectangle height, pixels (see **Required operating principles**). Set by user or can be changed by tracking algorithm if RECT_AUTO_SIZE == 1. |
 | LOST_MODE_OPTION        | read / write | Option for LOST mode. Parameter that defines the behavior of the tracking  algorithm in LOST mode. Default is 0. Possible values:<br />**0.** In LOST mode, the coordinates of the center of the  tracking rectangle are not updated and remain the  same as before entering LOST mode.<br />**1.** The coordinates of the center of the tracking  rectangle are updated based on the components  of the object’s speed calculated before going into  LOST mode. If the tracking rectangle “touches” the  edge of the video frame, the coordinate updating  for this component (horizontal or vertical) will stop.<br />**2.** The coordinates of the center of the tracking  rectangle are updated based on the components  of the object’s speed calculated before going into  LOST mode. The tracking is reset if the center of  the tracking rectangle touches any of the edges of  the video frame. |
 | FRAME_BUFFER_SIZE       | read / write | Size of frame buffer (number of frames to store). Set by user. |
 | MAX_FRAMES_IN_LOST_MODE | read / write | Maximum number of frames in LOST mode to auto reset of algorithm. Set by user. |
@@ -672,10 +672,10 @@ public:
     /// Tracking rectangle vertical center position. Calculated by tracking
     /// algorithm.
     int rectY{0};
-    /// Tracking rectangle width, pixels. Set in user or can be changed by
+    /// Tracking rectangle width, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     int rectWidth{72};
-    /// Tracking rectangle height, pixels. Set in user or can be changed by
+    /// Tracking rectangle height, pixels. Set by user or can be changed by
     /// tracking algorithm if rectAutoSize == true.
     int rectHeight{72};
     /// Estimated horizontal position of object center, pixels. Calculated by
@@ -791,8 +791,8 @@ public:
 | mode                 | int   | Tracker mode index: 0 - FREE, 1 - TRACKING, 2 - INERTIAL, 3 - STATIC. Set by video tracker according to processing results or after command execution. |
 | rectX                | int   | Tracking rectangle horizontal center position, pixels. Calculated by tracking algorithm. |
 | rectY                | int   | Tracking rectangle vertical center position, pixels. Calculated by tracking algorithm. |
-| rectWidth            | int   | Tracking rectangle width, pixels. Set in user or can be changed by tracking algorithm if rectAutoSize == true. |
-| rectHeight           | int   | Tracking rectangle height, pixels. Set in user or can be changed by tracking algorithm if rectAutoSize == true. |
+| rectWidth            | int   | Tracking rectangle width, pixels. Set by user or can be changed by tracking algorithm if rectAutoSize == true. |
+| rectHeight           | int   | Tracking rectangle height, pixels. Set by user or can be changed by tracking algorithm if rectAutoSize == true. |
 | objectX              | int   | Estimated horizontal position of object center, pixels. Calculated by video tracker. |
 | objectY              | int   | Estimated vertical position of object center, pixels. Calculated by video tracker. |
 | objectWidth          | int   | Estimated object width, pixels. Calculated by video tracker. |
