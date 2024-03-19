@@ -105,7 +105,7 @@ public:
     /// center but can be set by user to move search window for new video frame.
     int searchWindowX{0};
     /// Vertical position of search window center. This position will be used
-    /// for next video frame. Usually it coinsides with data tracking rectangle
+    /// for next video frame. Usually it coincides with data tracking rectangle
     /// center but can be set by user to move search window for new video frame.
     int searchWindowY{0};
     /// Option for LOST mode. Parameter that defines the behavior of the
@@ -268,7 +268,7 @@ enum class VTrackerCommand
 
 
 /**
- * @brief Video tracker params enum. Params whick defines algorithm parameters.
+ * @brief Video tracker params enum. Params which defines algorithm parameters.
  */
 enum class VTrackerParam
 {
