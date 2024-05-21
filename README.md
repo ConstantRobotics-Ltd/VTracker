@@ -1,10 +1,10 @@
-![vtracker_logo](_static/vtracker_web_logo.png)
+![vtracker_logo](./static/vtracker_web_logo.png)
 
 
 
 # **VTracker interface C++ library**
 
-**v1.4.2**
+**v1.4.3**
 
 
 
@@ -43,7 +43,7 @@
 
 # Overview
 
-**VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class doesn't do anything, just provides interface, defines data structures and provides methods to encode/decode commands and encode/decode params. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains list of data structures ([**VTrackerCommand enum**](#vtrackercommand-enum), [**VTrackerParam enum**](#vtrackerparam-enum) and [**VTrackerParams class**](#vtrackerparams-class-description)) and **VTracker** class declaration. [**VTrackerParams class**](#vtrackerparams-class-description) contains video tracker params and includes methods to encode and decode params. [**VTrackerCommand enum**](#vtrackercommand-enum) contains IDs of commands. [**VTrackerParam enum**](#vtrackerparam-enum) contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. **VTracker** interface class depends on [**Frame**](https://github.com/ConstantRobotics-Ltd/Frame) class (describes video frame and video frame data structures, necessary for autofocus functions) and [**ConfigReader**](https://github.com/ConstantRobotics-Ltd/ConfigReader) library (provides methods to read/write JSON config files). It uses C++17 standard. The library is licensed under the **Apache 2.0** license.
+**VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class doesn't do anything, just provides interface, defines data structures and provides methods to encode/decode commands and encode/decode params. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains list of data structures ([VTrackerCommand enum](#vtrackercommand-enum), [VTrackerParam enum](#vtrackerparam-enum) and [VTrackerParams class](#vtrackerparams-class-description)) and **VTracker** class declaration. [VTrackerParams class](#vtrackerparams-class-description) contains video tracker params and includes methods to encode and decode params. [VTrackerCommand enum](#vtrackercommand-enum) contains IDs of commands. [VTrackerParam enum](#vtrackerparam-enum) contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. **VTracker** interface class depends on [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class (describes video frame and video frame data structures, source code included, Apache 2.0 license) and [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library (provides methods to read/write JSON config files, source code included, Apache 2.0 license). It uses C++17 standard. The library is licensed under the **Apache 2.0** license.
 
 
 
@@ -60,6 +60,7 @@
 | 1.3.1   | 13.11.2023   | - Frame class updated.                                       |
 | 1.4.1   | 13.12.2023   | - Virtual destructor added. <br />- Frame class updated.     |
 | 1.4.2   | 19.03.2024   | - Documentation updated.<br />- Frame class updated.<br />- ConfigReader class updated. |
+| 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated. |
 
 
 
@@ -68,26 +69,26 @@
 The library supplied by source code only. The user would be given a set of files in the form of a CMake project (repository). The repository structure is shown below:
 
 ```xml
-CMakeLists.txt ------------------- Main CMake file of the library.
-3rdparty ------------------------- Folder with third-party libraries.
-    CMakeLists.txt --------------- CMake file which includes third-party. libraries.
-    ConfigReader ----------------- Source code of the ConfigReader library.
-    Frame ------------------------ Source code of the Frame library.
-example -------------------------- Folder with custom video tracker class.
-    CMakeLists.txt --------------- CMake file for custom video tracker class.
-    CustomVTracker.cpp ----------- Source code file of the CustomVTracker class.
-    CustomVTracker.h ------------- Header with CustomVTracker class declaration.
-    CustomVTrackerVersion.h ------ Header file which includes CustomVTracker version.
-    CustomVTrackerVersion.h.in --- CMake service file to generate version file.
-test ----------------------------- Folder with codec test application.
-    CMakeLists.txt --------------- CMake file for codec test application.
-    main.cpp --------------------- Source code file of VTracker class test application.
-src ------------------------------ Folder with source code of the library.
-    CMakeLists.txt --------------- CMake file of the library.
-    VTracker.cpp ----------------- Source code file of the library.
-    VTracker.h ------------------- Header file which includes VTracker class declaration.
-    VTrackerVersion.h ------------ Header file which includes version of the library.
-    VTrackerVersion.h.in --------- CMake service file to generate version file.
+CMakeLists.txt ------------------ Main CMake file of the library.
+3rdparty ------------------------ Folder with third-party libraries.
+    CMakeLists.txt -------------- CMake file to include third-party libraries.
+    ConfigReader ---------------- Folder with ConfigReader library source code.
+    Frame ----------------------- Folder with Frame library source code.
+example ------------------------- Folder with custom video tracker class.
+    CMakeLists.txt -------------- CMake file for custom video tracker class.
+    CustomVTracker.cpp ---------- Source code file of the CustomVTracker class.
+    CustomVTracker.h ------------ Header with CustomVTracker class declaration.
+    CustomVTrackerVersion.h ----- Header file which includes CustomVTracker version.
+    CustomVTrackerVersion.h.in -- CMake service file to generate version file.
+test ---------------------------- Folder with codec test application.
+    CMakeLists.txt -------------- CMake file for codec test application.
+    main.cpp -------------------- Source code file of VTracker class test application.
+src ----------------------------- Folder with source code of the library.
+    CMakeLists.txt -------------- CMake file of the library.
+    VTracker.cpp ---------------- Source code file of the library.
+    VTracker.h ------------------ Header file which includes VTracker class declaration.
+    VTrackerVersion.h ----------- Header file which includes version of the library.
+    VTrackerVersion.h.in -------- CMake service file to generate version file.
 ```
 
 
@@ -96,7 +97,7 @@ src ------------------------------ Folder with source code of the library.
 
 The video tracker shall provide the following principle of operation: each video frame without dropping must be send to the tracker for processing regardless of the current tracker operation mode. If the tracker is not in tracking mode, the tracker does not perform frame processing, but the processing function must be called by user. Tracker should calculate at least tracking rectangle position (aka object position) for each processed video frame. Figure 1 shows basic principles of object search on video frames.
 
-![vtracker_algorithm_principle](_static/vtracker_algorithm_principle.png)
+![vtracker_algorithm_principle](./static/vtracker_algorithm_principle.png)
 
 **Figure 1** - Basic principles of object search. (**1** - object image on the current frame, **2** - tracking rectangle calculated after processing of the current frame, **3** - position of the tracking rectangle on the previous frame, **4** - object search window on the current frame relative to the position of the tracking rectangle on the previous frame, **5** - current video frame)
 
@@ -114,7 +115,7 @@ At the moment of object capturing, the rectangular area of the video frame (capt
 
 Figure 2 shows the operating mode graph and the possible transitions between them. The words auto in figure 2 indicate the ability to change the mode automatically if the relevant criteria are met. the words command indicated the ability to change mode by user's command.
 
-![vtracker_algorithm_modes](_static/vtracker_algorithm_modes.png)
+![vtracker_algorithm_modes](./static/vtracker_algorithm_modes.png)
 
 **Figure 2** - Operation modes of the tracking algorithm. (Auto – automatic mode change capability)
 
@@ -207,7 +208,7 @@ cout << "VTracker class version: " << VTracker::getVersion() << endl;
 Console output:
 
 ```bash
-VTracker class version: 1.4.1
+VTracker class version: 1.4.3
 ```
 
 
@@ -222,7 +223,7 @@ virtual bool initVTracker(VTrackerParams& params) = 0;
 
 | Parameter | Value                                                        |
 | --------- | ------------------------------------------------------------ |
-| params    | Video tracker params class. Video tracker should initialize all parameters listed in [**VTrackerParams class**](#vtrackerparams-class-description). |
+| params    | Video tracker params class. Video tracker should initialize all parameters listed in [VTrackerParams class](#vtrackerparams-class-description). |
 
 **Returns:** TRUE if the video tracker initialized or FALSE if not.
 
@@ -238,7 +239,7 @@ virtual bool setParam(VTrackerParam id, float value) = 0;
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| id        | Parameter ID according to [**VTrackerParam enum**](#vtrackerparam-enum). |
+| id        | Parameter ID according to [VTrackerParam enum](#vtrackerparam-enum). |
 | value     | Parameter value. Value depends on parameter ID.              |
 
 **Returns:** TRUE if the parameter was set or FALSE if not.
@@ -255,7 +256,7 @@ virtual float getParam(VTrackerParam id) = 0;
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| id        | Parameter ID according to [**VTrackerParam enum**](#vtrackerparam-enum). |
+| id        | Parameter ID according to [VTrackerParam enum](#vtrackerparam-enum). |
 
 **Returns:** parameter value or -1 of the parameters doesn't exist in particular video tracker.
 
@@ -285,10 +286,10 @@ virtual bool executeCommand(VTrackerCommand id, float arg1 = 0, float arg2 = 0, 
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| id        | Command ID according to [**VTrackerCommand enum**](#vtrackercommand-enum). |
-| arg1      | First argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
-| arg2      | Second argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
-| arg3      | Third argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
+| id        | Command ID according to [VTrackerCommand enum](#vtrackercommand-enum). |
+| arg1      | First argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
+| arg2      | Second argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
+| arg3      | Third argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
 
 **Returns:** TRUE is the command was executed or FALSE if not.
 
@@ -304,7 +305,7 @@ virtual bool processFrame(cr::video::Frame& frame) = 0;
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://github.com/ConstantRobotics-Ltd/Frame) class description). Video trackers should implement all RAW pixel format listed above. |
+| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class description). Video trackers should implement all RAW pixel format listed above. |
 
 **Returns:** TRUE is the video frame was processed FALSE if not. If video tracker not in tracking mode the method should return TRUE.
 
@@ -321,7 +322,7 @@ virtual void getImage(int type, cr::video::Frame& image) = 0;
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | type      | Image type. Depends on implementation.                       |
-| frame     | Output frame (see [Frame](https://github.com/ConstantRobotics-Ltd/Frame) class description). Pixel format depends on implementation. |
+| frame     | Output frame (see [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class description). Pixel format depends on implementation. |
 
 
 
@@ -337,8 +338,8 @@ static void encodeSetParamCommand(uint8_t* data, int& size, VTrackerParam id, fl
 | --------- | ------------------------------------------------------------ |
 | data      | Pointer to data buffer for encoded command. Must have size >= 11. |
 | size      | Size of encoded data. Will be 11 bytes.                      |
-| id        | Parameter ID according to [**VTrackerParam enum**](#vtrackerparam-enum). |
-| value     | Parameter value. Value depends on parameter ID (see [**VTrackerParam enum**](#vtrackerparam-enum) description). |
+| id        | Parameter ID according to [VTrackerParam enum](#vtrackerparam-enum). |
+| value     | Parameter value. Value depends on parameter ID (see [VTrackerParam enum](#vtrackerparam-enum) description). |
 
 **encodeSetParamCommand(...)** is static and used without **VTracker** class instance. This method used on client side (control system). Command encoding example:
 
@@ -362,10 +363,10 @@ static void encodeCommand(uint8_t* data, int& size, VTrackerCommand id, float ar
 | --------- | ------------------------------------------------------------ |
 | data      | Pointer to data buffer for encoded command. Must have size >= 19. |
 | size      | Size of encoded data. Will be 19 bytes.                      |
-| id        | Command ID according to [**VTrackerCommand enum**](#vtrackercommand-enum). |
-| arg1      | First argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
-| arg2      | Second argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
-| arg3      | Third argument. Value depends on command ID (see [**VTrackerCommand enum**](#vtrackercommand-enum) description). |
+| id        | Command ID according to [VTrackerCommand enum](#vtrackercommand-enum). |
+| arg1      | First argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
+| arg2      | Second argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
+| arg3      | Third argument. Value depends on command ID (see [VTrackerCommand enum](#vtrackercommand-enum) description). |
 
 **encodeCommand(...)** is static and used without **VTracker** class instance. This method used on client side (control system). Command encoding example:
 
@@ -393,8 +394,8 @@ static int decodeCommand(uint8_t* data, int size, VTrackerParam& paramId, VTrack
 | --------- | ------------------------------------------------------------ |
 | data      | Pointer to input command.                                    |
 | size      | Size of command. Should be 11 bytes for SET_PARAM or 19 bytes for COMMAND. |
-| paramId   | Parameter ID according to [**VTrackerParam enum**](#vtrackerparam-enum). After decoding SET_PARAM command the method will return parameter ID. |
-| commandId | Command ID according to [**VTrackerCommand enum**](#vtrackercommand-enum). After decoding COMMAND the method will return command ID. |
+| paramId   | Parameter ID according to [VTrackerParam enum](#vtrackerparam-enum). After decoding SET_PARAM command the method will return parameter ID. |
+| commandId | Command ID according to [VTrackerCommand enum](#vtrackercommand-enum). After decoding COMMAND the method will return command ID. |
 | value1    | Parameter value or first command argument 1. After decoding SET_PARAM and COMMAND. |
 | value2    | Parameter value or second command argument 1. After decoding COMMAND. |
 | value3    | Parameter value or third command argument 1. After decoding COMMAND. |
@@ -617,7 +618,7 @@ enum class VTrackerParam
 
 ## VTrackerParams class declaration
 
-**VTrackerParams** class used for video tracker initialization (**initVTracker(...)** method) or to get all actual params and tracking results (**getParams()** method). Also **VTrackerParams** provide structure to write/read params from JSON files (**JSON_READABLE** macro, see [**ConfigReader**](https://github.com/ConstantRobotics-Ltd/ConfigReader) class description) and provides methos to encode and decode params. Class declaration:
+**VTrackerParams** class used for video tracker initialization (**initVTracker(...)** method) or to get all actual params and tracking results (**getParams()** method). Also **VTrackerParams** provide structure to write/read params from JSON files (**JSON_READABLE** macro, see [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) class description) and provides methods to encode and decode params. Class declaration:
 
 ```cpp
 class VTrackerParams
@@ -788,7 +789,7 @@ public:
 
 ## Serialize video tracker params
 
-[**VTrackerParams**](#vtrackerparams-class-description) class provides method **encode(...)** to serialize video tracker params (fields of VTrackerParams class, see Table 5). Serialization of params necessary in case when you need to send params via communication channels. Method provides options to exclude particular parameters from serialization. To do this method inserts binary mask (5 bytes) where each bit represents particular parameter and **decode(...)** method recognizes it. Method doesn't encode initString. Method declaration:
+[VTrackerParams](#vtrackerparams-class-description) class provides method **encode(...)** to serialize video tracker params (fields of VTrackerParams class, see Table 5). Serialization of params necessary in case when you need to send params via communication channels. Method provides options to exclude particular parameters from serialization. To do this method inserts binary mask (5 bytes) where each bit represents particular parameter and **decode(...)** method recognizes it. Method doesn't encode initString. Method declaration:
 
 ```cpp
 bool encode(uint8_t* data, int bufferSize, int& size, VTrackerParamsMask* mask = nullptr);
@@ -799,7 +800,7 @@ bool encode(uint8_t* data, int bufferSize, int& size, VTrackerParamsMask* mask =
 | data       | Pointer to data buffer. Buffer size should be at least **135** bytes. |
 | bufferSize | Data buffer size. Buffer size should be at least **135** bytes. |
 | size       | Size of encoded data.                                        |
-| mask       | Parameters mask - pointer to **VrackerParamsMask** structure. **VTrackerParamsMask** (declared in VTracker.h file) determines flags for each field (parameter) declared in [**VTrackerParams class**](#vtrackerparams-class-description). If the user wants to exclude any parameters from serialization, he can put a pointer to the mask. If the user wants to exclude a particular parameter from serialization, he should set the corresponding flag in the **VTrackerParamsMask** structure. |
+| mask       | Parameters mask - pointer to **VrackerParamsMask** structure. **VTrackerParamsMask** (declared in VTracker.h file) determines flags for each field (parameter) declared in [VTrackerParams class](#vtrackerparams-class-description). If the user wants to exclude any parameters from serialization, he can put a pointer to the mask. If the user wants to exclude a particular parameter from serialization, he should set the corresponding flag in the **VTrackerParamsMask** structure. |
 
 **VTrackerParamsMask** structure declaration:
 
@@ -885,7 +886,7 @@ cout << "Encoded data size: " << size << " bytes" << endl;
 
 ## Deserialize video tracker params
 
-[**VTrackerParams**](#vtrackerparams-class-description) class provides method **decode(...)** to deserialize params (fields of VTrackerParams class, see Table 5). Deserialization of params necessary in case when you need to receive params via communication channels. Method automatically recognizes which parameters were serialized by **encode(...)** method. Method declaration:
+[VTrackerParams](#vtrackerparams-class-description) class provides method **decode(...)** to deserialize params (fields of VTrackerParams class, see Table 5). Deserialization of params necessary in case when you need to receive params via communication channels. Method automatically recognizes which parameters were serialized by **encode(...)** method. Method declaration:
 
 ```cpp
 bool decode(uint8_t* data, int dataSize);
@@ -925,7 +926,7 @@ if (!out.decode(data, size))
 
 ## Read params from JSON file and write to JSON file
 
-**VTracker** library depends on [**ConfigReader**](https://github.com/ConstantRobotics-Ltd/ConfigReader) library which provides method to read params from JSON file and to write params to JSON file. Example of writing and reading params to JSON file:
+**VTracker** library depends on [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library which provides method to read params from JSON file and to write params to JSON file. Example of writing and reading params to JSON file:
 
 ```cpp
 // Prepare random params.
@@ -1097,7 +1098,7 @@ Done!
 
 # How to make custom implementation
 
-The **VTracker** class provides only an interface, data structures, and methods for encoding and decoding commands and params. To create your own implementation of the video tracker, you must include the VTracker repository in your project (see [**Build and connect to your project**](#build-and-connect-to-your-project) section). The catalogue **example** (see [**Library files**](#library-files) section) includes an example of the design of the custom video tracker. You must implement all the methods of the VTracker interface class. Custom video tracker class declaration:
+The **VTracker** class provides only an interface, data structures, and methods for encoding and decoding commands and params. To create your own implementation of the video tracker, you must include the VTracker repository in your project (see [Build and connect to your project](#build-and-connect-to-your-project) section). The catalogue **example** (see [Library files](#library-files) section) includes an example of the design of the custom video tracker. You must implement all the methods of the VTracker interface class. Custom video tracker class declaration:
 
 ```cpp
 class CustomVTracker: public VTracker
