@@ -30,8 +30,8 @@ endif()
 ## project configuration
 ################################################################################
 SET(${PARENT}_VTRACKER                       ON  CACHE BOOL "" ${REWRITE_FORCE})
-SET(${PARENT}_VTRACKER_TEST                  ON  CACHE BOOL "" ${REWRITE_FORCE})
-SET(${PARENT}_VTRACKER_EXAMPLE               ON  CACHE BOOL "" ${REWRITE_FORCE})
+SET(${PARENT}_VTRACKER_TEST                  OFF CACHE BOOL "" ${REWRITE_FORCE})
+SET(${PARENT}_VTRACKER_EXAMPLE               OFF CACHE BOOL "" ${REWRITE_FORCE})
 
 
 
