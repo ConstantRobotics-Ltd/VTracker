@@ -30,8 +30,15 @@ endif()
 ## project configuration
 ################################################################################
 SET(${PARENT}_VTRACKER                       ON  CACHE BOOL "" ${REWRITE_FORCE})
-SET(${PARENT}_VTRACKER_TEST                  OFF CACHE BOOL "" ${REWRITE_FORCE})
-SET(${PARENT}_VTRACKER_EXAMPLE               OFF CACHE BOOL "" ${REWRITE_FORCE})
+if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    SET(${PARENT}_VTRACKER_TEST              OFF CACHE BOOL "" ${REWRITE_FORCE})
+    SET(${PARENT}_VTRACKER_EXAMPLE           OFF CACHE BOOL "" ${REWRITE_FORCE})
+    message("Included as subrepository")
+else()
+    SET(${PARENT}_VTRACKER_TEST              ON  CACHE BOOL "" ${REWRITE_FORCE})
+    SET(${PARENT}_VTRACKER_EXAMPLE           ON  CACHE BOOL "" ${REWRITE_FORCE})
+    message("Stand alone repository")
+endif()
 
 
 
