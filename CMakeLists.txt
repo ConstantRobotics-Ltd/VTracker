@@ -23,6 +23,11 @@ else()
     SET(REWRITE_FORCE "")
 endif()
 
+# Set default Release mode if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type defaulting to Release" FORCE)
+endif()
+
 
 
 ################################################################################
@@ -33,11 +38,11 @@ SET(${PARENT}_VTRACKER                       ON  CACHE BOOL "" ${REWRITE_FORCE})
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     SET(${PARENT}_VTRACKER_TEST              OFF CACHE BOOL "" ${REWRITE_FORCE})
     SET(${PARENT}_VTRACKER_EXAMPLE           OFF CACHE BOOL "" ${REWRITE_FORCE})
-    message("Included as subrepository")
+    message("${PROJECT_NAME} included as subrepository")
 else()
     SET(${PARENT}_VTRACKER_TEST              ON  CACHE BOOL "" ${REWRITE_FORCE})
     SET(${PARENT}_VTRACKER_EXAMPLE           ON  CACHE BOOL "" ${REWRITE_FORCE})
-    message("Stand alone repository")
+    message("${PROJECT_NAME} is stand alone repository")
 endif()
 
 

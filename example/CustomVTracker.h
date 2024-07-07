@@ -22,28 +22,28 @@ public:
     static std::string getVersion();
 
     /// Init video tracker.
-    bool initVTracker(VTrackerParams& params);
+    bool initVTracker(VTrackerParams& params) override;
 
     /// Set video tracker param.
-    bool setParam(VTrackerParam id, float value);
+    bool setParam(VTrackerParam id, float value) override;
 
     /// Get video tracker param value.
-    float getParam(VTrackerParam id);
+    float getParam(VTrackerParam id) override;
 
     /// Get video tracker params (results).
-    void getParams(VTrackerParams& params);
+    void getParams(VTrackerParams& params) override;
 
     /// Execute command.
     bool executeCommand(VTrackerCommand id,
                                 float arg1 = 0,
                                 float arg2 = 0,
-                                float arg3 = 0);
+                                float arg3 = 0) override;
 
     /// Process frame.
-    bool processFrame(cr::video::Frame& frame);
+    bool processFrame(cr::video::Frame& frame) override;
 
     /// Get image of internal surfaces.
-    void getImage(int type, cr::video::Frame& image);
+    void getImage(int type, cr::video::Frame& image) override;
 
 public:
 

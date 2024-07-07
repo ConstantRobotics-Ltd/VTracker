@@ -440,7 +440,7 @@ public:
                              float& value3);
 
     /**
-     * @brief Decode command.
+     * @brief Decode and execute command.
      * @param data Pointer to command data.
      * @param size Size of data.
      * @return TRUE if command decoded and executed or FALSE if not.
@@ -449,7 +449,3 @@ public:
 };
 }
 }
-
-
-
-

@@ -4,7 +4,7 @@
 
 # **VTracker interface C++ library**
 
-**v1.4.3**
+**v1.4.4**
 
 
 
@@ -14,7 +14,7 @@
 - [Versions](#versions)
 - [Library files](#library-files)
 - [Required operating principles](#required-operating-principles)
-- [VTracker interface class description](#vtracker-interface-class-description)
+- [VTracker class description](#vtracker-class-description)
   - [VTracker class declaration](#vtracker-class-declaration)
   - [getVersion method](#getversion-method)
   - [initVTracker method](#initvtracker-method)
@@ -43,7 +43,7 @@
 
 # Overview
 
-**VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class doesn't do anything, just provides interface, defines data structures and provides methods to encode/decode commands and encode/decode params. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains list of data structures ([VTrackerCommand enum](#vtrackercommand-enum), [VTrackerParam enum](#vtrackerparam-enum) and [VTrackerParams class](#vtrackerparams-class-description)) and **VTracker** class declaration. [VTrackerParams class](#vtrackerparams-class-description) contains video tracker params and includes methods to encode and decode params. [VTrackerCommand enum](#vtrackercommand-enum) contains IDs of commands. [VTrackerParam enum](#vtrackerparam-enum) contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. **VTracker** interface class depends on [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class (describes video frame and video frame data structures, source code included, Apache 2.0 license) and [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library (provides methods to read/write JSON config files, source code included, Apache 2.0 license). It uses C++17 standard. The library is licensed under the **Apache 2.0** license.
+**VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class does nothing, just provides interface, defines data structures and provides methods to encode/decode commands and encode/decode params. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains list of data structures ([VTrackerCommand enum](#vtrackercommand-enum), [VTrackerParam enum](#vtrackerparam-enum) and [VTrackerParams class](#vtrackerparams-class-description)) and **VTracker** class declaration. [VTrackerParams class](#vtrackerparams-class-description) contains video tracker params and includes methods to encode and decode params. [VTrackerCommand enum](#vtrackercommand-enum) contains IDs of commands. [VTrackerParam enum](#vtrackerparam-enum) contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. **VTracker** interface class depends on [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class (describes video frame and video frame data structures, source code included, Apache 2.0 license) and [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library (provides methods to read/write JSON config files, source code included, Apache 2.0 license). It uses C++17 standard. The library is licensed under the **Apache 2.0** license.
 
 
 
@@ -60,7 +60,9 @@
 | 1.3.1   | 13.11.2023   | - Frame class updated.                                       |
 | 1.4.1   | 13.12.2023   | - Virtual destructor added. <br />- Frame class updated.     |
 | 1.4.2   | 19.03.2024   | - Documentation updated.<br />- Frame class updated.<br />- ConfigReader class updated. |
-| 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated. |
+| 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated.          |
+| 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated.          |
+| 1.4.4   | 06.07.2024   | - CMake updated.<br />- Submodules updated.                  |
 
 
 
@@ -76,7 +78,7 @@ CMakeLists.txt ------------------ Main CMake file of the library.
     Frame ----------------------- Folder with Frame library source code.
 example ------------------------- Folder with custom video tracker class.
     CMakeLists.txt -------------- CMake file for custom video tracker class.
-    CustomVTracker.cpp ---------- Source code file of the CustomVTracker class.
+    CustomVTracker.cpp ---------- C++ implementation file.
     CustomVTracker.h ------------ Header with CustomVTracker class declaration.
     CustomVTrackerVersion.h ----- Header file which includes CustomVTracker version.
     CustomVTrackerVersion.h.in -- CMake service file to generate version file.
@@ -85,7 +87,7 @@ test ---------------------------- Folder with codec test application.
     main.cpp -------------------- Source code file of VTracker class test application.
 src ----------------------------- Folder with source code of the library.
     CMakeLists.txt -------------- CMake file of the library.
-    VTracker.cpp ---------------- Source code file of the library.
+    VTracker.cpp ---------------- C++ implementation file.
     VTracker.h ------------------ Header file which includes VTracker class declaration.
     VTrackerVersion.h ----------- Header file which includes version of the library.
     VTrackerVersion.h.in -------- CMake service file to generate version file.
@@ -99,31 +101,31 @@ The video tracker shall provide the following principle of operation: each video
 
 ![vtracker_algorithm_principle](./static/vtracker_algorithm_principle.png)
 
-**Figure 1** - Basic principles of object search. (**1** - object image on the current frame, **2** - tracking rectangle calculated after processing of the current frame, **3** - position of the tracking rectangle on the previous frame, **4** - object search window on the current frame relative to the position of the tracking rectangle on the previous frame, **5** - current video frame)
+**Figure 1** - Basic principles of object search. (**1** - object image on the current frame, **2** - tracking rectangle calculated after processing of the current frame, **3** - position of the tracking rectangle on the previous frame, **4** - object search window on the current frame relative to the position of the tracking rectangle on the previous frame, **5** - current video frame).
 
-At the moment of object capturing, the rectangular area of the video frame (capture rectangle) specified in the capture parameters (position and size) is taken as the object reference image, on the basis of which the pattern is formed. The algorithm then searches an object in each frame of the video in particular search window. Search window is area bounded by the algorithm's parameters with the center coinciding with the calculated center of the tracking rectangle on the previous video frame (or the center of the capture rectangle if  the first frame after capture is being processed, position of search window can be change by user for any video frame). The calculated most probable position of the tracking object (with highest value of correlation function) in the current video frame (calculated center of the tracking rectangle) is taken as the coordinates of the object. Figure 1 shows a schematic representation of a video frame **(5)** that contains an image of a object **(1)**. Assume that on the previous video frame the object was in the area corresponding to area **(3)**, which is the area of the tracking rectangle (the most probable position of the object) in the previous video frame. The library performs object search in the area **(4)** whose center coincides with the position of the center of the tracking rectangle **(3)** in the previous video frame. Tracker should support (if it possible) follow modes.
+At the moment of object capturing, the rectangular area of the video frame (capture rectangle) specified in the capture parameters (position and size) is taken as the object reference image, on the basis of which the pattern is formed. The algorithm then searches an object in each frame of the video in particular search window. Search window is area bounded by the algorithm's parameters with the center coinciding with the calculated center of the tracking rectangle on the previous video frame (or the center of the capture rectangle if the first frame after capture is being processed, position of search window can be change by user for any video frame). The calculated most probable position of the tracking object (with highest value of correlation function) in the current video frame (calculated center of the tracking rectangle) is taken as the coordinates of the object. Figure 1 shows a schematic representation of a video frame **(5)** that contains an image of a object **(1)**. Assume that on the previous video frame the object was in the area corresponding to area **(3)**, which is the area of the tracking rectangle (the most probable position of the object) in the previous video frame. The library performs object search in the area **(4)** whose center coincides with the position of the center of the tracking rectangle **(3)** in the previous video frame. Tracker should support (if it possible) follow modes.
 
 **Table 2** - Tracking algorithm operating modes.
 
 | Mode                                | Description                                                  |
 | ----------------------------------- | ------------------------------------------------------------ |
-| FREE - free mode.                   | In this mode, video tracker does not perform any calculations. Video tracker only adds video frames to the frame buffer. Conditions for entering FREE mode: **1.** Once the video tracker has been initialized. This mode is the default mode. **2.** Automatically when the automatic tracking reset criteria are met. **3.** After command RESET. |
+| FREE - free mode.                   | In this mode, video tracker does not perform any calculations. Video tracker only adds video frames to the frame buffer or drop frame if no frame buffer in particular implementation. Conditions for entering FREE mode: **1.** Once the video tracker has been initialized. This mode is the default mode. **2.** Automatically when the automatic tracking reset criteria are met. **3.** After command RESET. |
 | TRACKING - tracking mode.           | In this mode the video tracker calculates the automatic tracking and updates all calculated (estimated) object parameters. Criteria for entering TRACKING mode: **1.** After the CAPTURE command. **2.** Automatically from LOST mode when object detection criteria are met. |
-| LOST - object loss  mode.           | In this mode, the video tracker searches object for automatic recapturing (switching  to TRACKING mode) and updates it’s coordinates in one of the ways specified  in the parameters. LOST mode contains the following additional modes: **0.** Tracking rectangle coordinates are not updated (remain the same as  before entering LOST mode). **1.** The tracking rectangle coordinates are updated based on the components of the object's speed calculated before going into LOST mode. When the tracking rectangle reaches any edge of the frame, the coordinate update in the corresponding direction stops. **2.** The tracking rectangle coordinates are updated based on the components of the speed of objects in the video frames calculated before going into LOST mode. When the tracking reset criteria is met,  the device switches to FREE mode. Criteria for entering LOST mode: **1.** Automatically when object loss is detected. **2.** On command from TRACKING mode. 3. On command from INERTIAL mode. 4. On command from STATIC mode. |
+| LOST - object loss  mode.           | In this mode, the video tracker searches object for automatic recapturing (switching to TRACKING mode) and updates it’s coordinates in one of the ways specified  in the parameters. LOST mode contains the following additional modes: **0.** Tracking rectangle coordinates are not updated (remain the same as  before entering LOST mode). **1.** The tracking rectangle coordinates are updated based on the components of the object's speed calculated before going into LOST mode. When the tracking rectangle reaches any edge of the frame, the coordinate update in the corresponding direction stops. **2.** The tracking rectangle coordinates are updated based on the components of the speed of objects in the video frames calculated before going into LOST mode. When the tracking reset criteria is met, the device switches to FREE mode. Criteria for entering LOST mode: **1.** Automatically when object loss is detected. **2.** On command from TRACKING mode. 3. On command from INERTIAL mode. 4. On command from STATIC mode. |
 | INERTIAL - inertial  tracking mode. | In this mode the video tracker does not search for an object to recapture automatically, but only updates the coordinates of the tracking rectangle based on the previously calculated velocity components of the objects. Criteria for entering INERTIAL mode: **1.** On command from TRACKING mode. **2.** On command from LOST mode. **3.** On command from STATIC mode. |
 | STATIC - static  mode.              | This mode does not perform any calculations and the tracking rectangle coordinates remain the same as before going into this mode. This mode is  necessary to “freeze” the tracking algorithm for a certain number of frames. For example, if the tracking system is exposed to strong vibrations, it is possible to “freeze” the tracking algorithm until the vibration ends. |
 
-Figure 2 shows the operating mode graph and the possible transitions between them. The words auto in figure 2 indicate the ability to change the mode automatically if the relevant criteria are met. the words command indicated the ability to change mode by user's command.
+Figure 2 shows the operating mode graph and the possible transitions between them. The words "Auto" in figure 2 indicate the ability to change the mode automatically if the relevant criteria are met. the words "Command" indicated the ability to change mode by user's command.
 
 ![vtracker_algorithm_modes](./static/vtracker_algorithm_modes.png)
 
-**Figure 2** - Operation modes of the tracking algorithm. (Auto – automatic mode change capability)
+**Figure 2** - Operation modes of the tracking algorithm. ("Auto" – automatic mode change capability).
 
-Figure 2 shows the graph of operation modes. There are the following conditions for automatic mode changes (word “Auto” in figure 2): **1.** Automatic switching from TRACKING to FREE mode is possible only if the tracking  rectangle center has touched (coincided in coordinates) any of the video frame edges. **2.** The automatic switching from TRACKING to LOST mode is possible when an object loss is detected – when the calculated object detection probability falls below the threshold. **3.** Automatic switching from LOST to TRACKING mode is possible when an object is detected again after a loss - when the calculated object detection probability exceeds the threshold. **4.** Automatic reset of tracking in the LOST mode (switch to FREE mode) is possible when the center of the tracking rectangle touches the edge of the video frame (if the LOST mode option set to 2), as well as when the number of frames specified in the parameters has  expired, at which the algorithm is continuously in LOST mode. **5.** Automatic reset of tracking in INERTIAL mode (switch to FREE mode) is possible when the  center of the tracking rectangle reaches the edge of the frame.
+Figure 2 shows the graph of operation modes. There are the following conditions for automatic mode changes (word “Auto” in figure 2): **1.** Automatic switching from TRACKING to FREE mode is possible only if the tracking rectangle center has touched (coincided in coordinates) any of the video frame edges. **2.** The automatic switching from TRACKING to LOST mode is possible when an object loss is detected – when the calculated object detection probability falls below the threshold. **3.** Automatic switching from LOST to TRACKING mode is possible when an object is detected again after a loss - when the calculated object detection probability exceeds the threshold. **4.** Automatic reset of tracking in the LOST mode (switch to FREE mode) is possible when the center of the tracking rectangle touches the edge of the video frame (if the LOST mode option set to 2), as well as when the number of frames specified in the parameters has  expired, at which the algorithm is continuously in LOST mode. **5.** Automatic reset of tracking in INERTIAL mode (switch to FREE mode) is possible when the  center of the tracking rectangle reaches the edge of the frame.
 
 
 
-# VTracker interface class description
+# VTracker class description
 
 
 
@@ -132,6 +134,10 @@ Figure 2 shows the graph of operation modes. There are the following conditions 
 **VTracker** interface class declared in **VTracker.h** file. Class declaration:
 
 ```cpp
+namespace cr
+{
+namespace vtracker
+{
 class VTracker
 {
 public:
@@ -163,7 +169,7 @@ public:
     /// Process frame.
     virtual bool processFrame(cr::video::Frame& frame) = 0;
 
-    ///  Get image of internal surfaces.
+    /// Get image of internal surfaces.
     virtual void getImage(int type, cr::video::Frame& image) = 0;
 
     /// Encode set param command.
@@ -184,16 +190,18 @@ public:
                              float& value2,
                              float& value3);
 
-    /// Decode command.
+    /// Decode and execute command.
     virtual bool decodeAndExecuteCommand(uint8_t* data, int size) = 0;
 };
+}
+}
 ```
 
 
 
 ## getVersion method
 
-The **getVersion()** method returns string of current version of **VTracker** class. Particular video tracker class can have it's own **getVersion()** method. Method declaration:
+The **getVersion()** method returns string of current version of **VTracker** class. Particular video tracker can have it's own **getVersion()** method. Method declaration:
 
 ```cpp
 static std::string getVersion();
@@ -208,14 +216,14 @@ cout << "VTracker class version: " << VTracker::getVersion() << endl;
 Console output:
 
 ```bash
-VTracker class version: 1.4.3
+VTracker class version: 1.4.4
 ```
 
 
 
 ## initVTracker method
 
-The **initVTracker(...)** method initializes video tracker by set of params. Method declaration:
+The **initVTracker(...)** method initializes video tracker by set of parameters. Method declaration:
 
 ```cpp
 virtual bool initVTracker(VTrackerParams& params) = 0;
@@ -328,7 +336,7 @@ virtual void getImage(int type, cr::video::Frame& image) = 0;
 
 ## encodeSetParamCommand method
 
-The **encodeSetParamCommand(...)** static method designed to encode command to change any parameter for remote video tracker. To control video tracker remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **VTracker** class contains static methods for encoding the control command. The **VTracker** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeSetParamCommand(...)** designed to encode SET_PARAM command. Method declaration:
+The **encodeSetParamCommand(...)** static method designed to encode command to change any parameter in remote video tracker. To control video tracker remotely, the developer has to design his own protocol and according to it encode the command and deliver it over the communication channel. To simplify this, the **VTracker** class contains static methods for encoding the control command. The **VTracker** class provides two types of commands: a parameter change command (SET_PARAM) and an action command (COMMAND). **encodeSetParamCommand(...)** designed to encode SET_PARAM command. Method declaration:
 
 ```cpp
 static void encodeSetParamCommand(uint8_t* data, int& size, VTrackerParam id, float value);
@@ -431,7 +439,7 @@ if (VTracker::decodeCommand(data, size, paramId, commandId, inArg1, inArg2, inAr
 
 ## decodeAndExecuteCommand method
 
-**decodeAndExecuteCommand(...)** method decodes and executes command on video tracker side. The particular implementation of the video tracker must provide thread-safe **decodeAndExecuteCommand(...)** method call. This means that the **decodeAndExecuteCommand(...)** method can be safely called from any thread. Method declaration:
+The **decodeAndExecuteCommand(...)** method decodes and executes command on video tracker side. The particular implementation of the video tracker must provide thread-safe **decodeAndExecuteCommand(...)** method call. This means that the **decodeAndExecuteCommand(...)** method can be safely called from any thread. Method declaration:
 
 ```cpp
 virtual bool decodeAndExecuteCommand(uint8_t* data, int size) = 0;
@@ -510,7 +518,7 @@ enum class VTrackerCommand
 };
 ```
 
-**Table 3** - Video tracker commands description. Some commands maybe unsupported by particular video tracker class. Necessary arguments for **executeCommand(...)** and **encodeCommand(...)** methods described.
+**Table 3** - Video tracker commands description. Some commands maybe unsupported by particular video tracker class. Recommended arguments for **executeCommand(...)** and **encodeCommand(...)**.
 
 | Command                             | Description                                                  |
 | ----------------------------------- | ------------------------------------------------------------ |
@@ -847,7 +855,7 @@ typedef struct VTrackerParamsMask
 Example without parameters mask:
 
 ```cpp
-// Prepare random params.
+// Prepare random parameters.
 VTrackerParams in;
 in.mode = rand() % 255;
 in.rectX = rand() % 255;
@@ -863,7 +871,7 @@ cout << "Encoded data size: " << size << " bytes" << endl;
 Example with parameters mask:
 
 ```cpp
-// Prepare random params.
+// Prepare random parameters.
 VTrackerParams in;
 in.mode = rand() % 255;
 in.rectX = rand() % 255;
@@ -901,7 +909,7 @@ bool decode(uint8_t* data, int dataSize);
 Example:
 
 ```cpp
-// Prepare random params.
+// Prepare random parameters.
 VTrackerParams in;
 in.mode = rand() % 255;
 in.rectX = rand() % 255;
@@ -926,21 +934,21 @@ if (!out.decode(data, size))
 
 ## Read params from JSON file and write to JSON file
 
-**VTracker** library depends on [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library which provides method to read params from JSON file and to write params to JSON file. Example of writing and reading params to JSON file:
+**VTracker** library depends on [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library which provides methods to read parameters from a JSON file and to write parameters to a JSON file. Example of writing to and reading from a JSON file:
 
 ```cpp
-// Prepare random params.
+// Prepare random parameters.
 VTrackerParams in;
 in.mode = rand() % 255;
 in.rectX = rand() % 255;
 in.rectY = rand() % 255;
 
-// Write params to file.
+// Write parameters to the file.
 cr::utils::ConfigReader inConfig;
 inConfig.set(in, "VTrackerParams");
 inConfig.writeToFile("VTrackerParams.json");
 
-// Read params from file.
+// Read parameters from the file.
 cr::utils::ConfigReader outConfig;
 if(!outConfig.readFromFile("VTrackerParams.json"))
 {
@@ -948,7 +956,7 @@ if(!outConfig.readFromFile("VTrackerParams.json"))
     return false;
 }
 
-// Obtain params from config reader.
+// Obtain parameters from the config reader.
 VTrackerParams out;
 if(!outConfig.get(out, "VTrackerParams"))
 {
@@ -1015,7 +1023,7 @@ git submodule add https://github.com/ConstantRobotics-Ltd/VTracker.git 3rdparty/
 git submodule update --init --recursive
 ```
 
-In you repository folder will be created folder **3rdparty/VTracker** which contains files of **VTracker** repository with subrepositories **Frame** and **ConfigReader**. New structure of your repository:
+In you repository folder will be created folder **3rdparty/VTracker** which contains files of **VTracker** repository with sub-repositories **Frame** and **ConfigReader**. New structure of your repository:
 
 ```bash
 CMakeLists.txt
@@ -1067,7 +1075,7 @@ if (${PARENT}_SUBMODULE_VTRACKER)
 endif()
 ```
 
-File **3rdparty/CMakeLists.txt** adds folder **VTracker** to your project and excludes test application (VTracker class test applications) from compiling. Your repository new structure will be:
+File **3rdparty/CMakeLists.txt** adds folder **VTracker** to your project and excludes test application (VTracker class test applications) from compiling (by default test application and example excluded from compiling if **VTracker** included as sub-repository). Your repository new structure will be:
 
 ```bash
 CMakeLists.txt

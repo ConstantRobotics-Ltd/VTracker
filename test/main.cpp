@@ -103,18 +103,18 @@ bool copyTest()
     in.maxFramesInLostMode = rand() % 255;
     in.processedFrameId = rand() % 255;
     in.frameId = rand() % 255;
-    in.velX = rand() % 255;
-    in.velY = rand() % 255;
-    in.detectionProbability = rand() % 255;
+    in.velX = (float)(rand() % 255);
+    in.velY = (float)(rand() % 255);
+    in.detectionProbability = (float)(rand() % 255);
     in.rectAutoSize = rand() % 255;
     in.rectAutoPosition = rand() % 255;
     in.multipleThreads = rand() % 255;
     in.numChannels = rand() % 255;
     in.type = rand() % 255;
     in.processingTimeMks = rand() % 255;
-    in.custom1 = rand() % 255;
-    in.custom2 = rand() % 255;
-    in.custom3 = rand() % 255;
+    in.custom1 = (float)(rand() % 255);
+    in.custom2 = (float)(rand() % 255);
+    in.custom3 = (float)(rand() % 255);
 
     // Copy params.
     VTrackerParams out = in;
@@ -323,18 +323,18 @@ bool encodeDecodeTest()
     in.maxFramesInLostMode = rand() % 255;
     in.processedFrameId = rand() % 255;
     in.frameId = rand() % 255;
-    in.velX = rand() % 255;
-    in.velY = rand() % 255;
-    in.detectionProbability = rand() % 255;
+    in.velX = (float)(rand() % 255);
+    in.velY = (float)(rand() % 255);
+    in.detectionProbability = (float)(rand() % 255);
     in.rectAutoSize = rand() % 255;
     in.rectAutoPosition = rand() % 255;
     in.multipleThreads = rand() % 255;
     in.numChannels = rand() % 255;
     in.type = rand() % 255;
     in.processingTimeMks = rand() % 255;
-    in.custom1 = rand() % 255;
-    in.custom2 = rand() % 255;
-    in.custom3 = rand() % 255;
+    in.custom1 = (float)(rand() % 255);
+    in.custom2 = (float)(rand() % 255);
+    in.custom3 = (float)(rand() % 255);
 
     // Encode data.
     uint8_t data[1024];
@@ -633,18 +633,18 @@ bool jsonReadWriteTest()
     in.maxFramesInLostMode = rand() % 255;
     in.processedFrameId = rand() % 255;
     in.frameId = rand() % 255;
-    in.velX = rand() % 255;
-    in.velY = rand() % 255;
-    in.detectionProbability = rand() % 255;
+    in.velX = (float)(rand() % 255);
+    in.velY = (float)(rand() % 255);
+    in.detectionProbability = (float)(rand() % 255);
     in.rectAutoSize = rand() % 255;
     in.rectAutoPosition = rand() % 255;
     in.multipleThreads = rand() % 255;
     in.numChannels = rand() % 255;
     in.type = rand() % 255;
     in.processingTimeMks = rand() % 255;
-    in.custom1 = rand() % 255;
-    in.custom2 = rand() % 255;
-    in.custom3 = rand() % 255;
+    in.custom1 = (float)(rand() % 255);
+    in.custom2 = (float)(rand() % 255);
+    in.custom3 = (float)(rand() % 255);
 
     // Write params to file.
     cr::utils::ConfigReader inConfig;
@@ -775,18 +775,18 @@ bool encodeDecodeWithMaskTest()
     in.maxFramesInLostMode = rand() % 255;
     in.processedFrameId = rand() % 255;
     in.frameId = rand() % 255;
-    in.velX = rand() % 255;
-    in.velY = rand() % 255;
-    in.detectionProbability = rand() % 255;
+    in.velX = (float)(rand() % 255);
+    in.velY = (float)(rand() % 255);
+    in.detectionProbability = (float)(rand() % 255);
     in.rectAutoSize = rand() % 255;
     in.rectAutoPosition = rand() % 255;
     in.multipleThreads = rand() % 255;
     in.numChannels = rand() % 255;
     in.type = rand() % 255;
     in.processingTimeMks = rand() % 255;
-    in.custom1 = rand() % 255;
-    in.custom2 = rand() % 255;
-    in.custom3 = rand() % 255;
+    in.custom1 = (float)(rand() % 255);
+    in.custom2 = (float)(rand() % 255);
+    in.custom3 = (float)(rand() % 255);
 
     // Prepare mask.
     VTrackerParamsMask mask;
