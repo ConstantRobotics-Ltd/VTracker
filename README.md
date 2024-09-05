@@ -313,7 +313,7 @@ virtual bool processFrame(cr::video::Frame& frame) = 0;
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class description). Video trackers should implement all RAW pixel format listed above. |
+| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Video trackers should implement all RAW pixel format listed above. |
 
 **Returns:** TRUE is the video frame was processed FALSE if not. If video tracker not in tracking mode the method should return TRUE.
 
@@ -330,7 +330,7 @@ virtual void getImage(int type, cr::video::Frame& image) = 0;
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | type      | Image type. Depends on implementation.                       |
-| frame     | Output frame (see [Frame](https://rapidpixel.constantrobotics.com/docs/service-libraries/frame.html) class description). Pixel format depends on implementation. |
+| frame     | Output frame (see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Pixel format depends on implementation. |
 
 
 
@@ -626,7 +626,7 @@ enum class VTrackerParam
 
 ## VTrackerParams class declaration
 
-**VTrackerParams** class used for video tracker initialization (**initVTracker(...)** method) or to get all actual params and tracking results (**getParams()** method). Also **VTrackerParams** provide structure to write/read params from JSON files (**JSON_READABLE** macro, see [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) class description) and provides methods to encode and decode params. Class declaration:
+**VTrackerParams** class used for video tracker initialization (**initVTracker(...)** method) or to get all actual params and tracking results (**getParams()** method). Also **VTrackerParams** provide structure to write/read params from JSON files (**JSON_READABLE** macro, see [ConfigReader](https://rapidpixel.constantrobotics.com/docs/Service/ConfigReader.html) class description) and provides methods to encode and decode params. Class declaration:
 
 ```cpp
 class VTrackerParams
@@ -934,7 +934,7 @@ if (!out.decode(data, size))
 
 ## Read params from JSON file and write to JSON file
 
-**VTracker** library depends on [ConfigReader](https://rapidpixel.constantrobotics.com/docs/service-libraries/config-reader.html) library which provides methods to read parameters from a JSON file and to write parameters to a JSON file. Example of writing to and reading from a JSON file:
+**VTracker** library depends on [ConfigReader](https://rapidpixel.constantrobotics.com/docs/Service/ConfigReader.html) library which provides methods to read parameters from a JSON file and to write parameters to a JSON file. Example of writing to and reading from a JSON file:
 
 ```cpp
 // Prepare random parameters.
