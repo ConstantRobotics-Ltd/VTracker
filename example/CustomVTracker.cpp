@@ -211,9 +211,9 @@ void cr::vtracker::CustomVTracker::getParams(VTrackerParams& params)
 
 bool cr::vtracker::CustomVTracker::executeCommand(
                     cr::vtracker::VTrackerCommand id,
-                    float arg1,
-                    float arg2,
-                    float arg3)
+                    [[maybe_unused]] float arg1,
+                    [[maybe_unused]] float arg2,
+                    [[maybe_unused]] float arg3)
 {
     // Check command ID.
     switch (id)
@@ -289,14 +289,15 @@ bool cr::vtracker::CustomVTracker::executeCommand(
 
 
 
-bool cr::vtracker::CustomVTracker::processFrame(cr::video::Frame& frame)
+bool cr::vtracker::CustomVTracker::processFrame([[maybe_unused]] cr::video::Frame& frame)
 {
     return true;
 }
 
 
 
-void cr::vtracker::CustomVTracker::getImage(int type, cr::video::Frame& image)
+void cr::vtracker::CustomVTracker::getImage([[maybe_unused]] int type,
+                                            [[maybe_unused]] cr::video::Frame& image)
 {
 
 }

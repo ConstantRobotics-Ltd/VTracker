@@ -180,6 +180,17 @@ public:
                   custom3);
 
     /**
+     * @brief Default constructor.
+     */
+    VTrackerParams() = default;
+
+    /**
+     * @brief Copy constructor.
+     * @param src Source object.
+     */
+    VTrackerParams(const VTrackerParams& src) = default;
+
+    /**
      * @brief operator =
      * @param src Source object.
      * @return VTrackerParams object.

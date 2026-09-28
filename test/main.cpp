@@ -36,42 +36,59 @@ int main(void)
     cout << "#####################################" << endl;
     cout << endl;
 
+    bool allPassed = true;
+
     cout << "Copy test:" << endl;
     if (copyTest())
         cout << "OK" << endl;
     else
+    {
         cout << "ERROR" << endl;
+        allPassed = false;
+    }
     cout << endl;
 
     cout << "Encode/Decode test:" << endl;
     if (encodeDecodeTest())
         cout << "OK" << endl;
     else
+    {
         cout << "ERROR" << endl;
+        allPassed = false;
+    }
     cout << endl;
 
     cout << "Encode/Decode test with params mask:" << endl;
     if (encodeDecodeWithMaskTest())
         cout << "OK" << endl;
     else
+    {
         cout << "ERROR" << endl;
+        allPassed = false;
+    }
     cout << endl;
 
     cout << "Encode/Decode commands test:" << endl;
     if (encodeDecodeCommandsTest())
         cout << "OK" << endl;
     else
+    {
         cout << "ERROR" << endl;
+        allPassed = false;
+    }
     cout << endl;
 
     cout << "JSON read/write test:" << endl;
     if (jsonReadWriteTest())
         cout << "OK" << endl;
     else
+    {
         cout << "ERROR" << endl;
+        allPassed = false;
+    }
     cout << endl;
 
-    return 1;
+    return allPassed ? 0 : 1;
 }
 
 

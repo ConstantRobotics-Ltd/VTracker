@@ -4,7 +4,7 @@
 
 # **VTracker interface C++ library**
 
-**v1.4.4**
+**v1.4.5**
 
 
 
@@ -61,8 +61,8 @@
 | 1.4.1   | 13.12.2023   | - Virtual destructor added. <br />- Frame class updated.     |
 | 1.4.2   | 19.03.2024   | - Documentation updated.<br />- Frame class updated.<br />- ConfigReader class updated. |
 | 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated.          |
-| 1.4.3   | 21.05.2024   | - Documentation updated.<br />- Submodules updated.          |
 | 1.4.4   | 06.07.2024   | - CMake updated.<br />- Submodules updated.                  |
+| 1.4.5   | 28.09.2026   | - Submodules updated.<br />- Compiler warnings fixed.        |
 
 
 
@@ -216,7 +216,7 @@ cout << "VTracker class version: " << VTracker::getVersion() << endl;
 Console output:
 
 ```bash
-VTracker class version: 1.4.4
+VTracker class version: 1.4.5
 ```
 
 
@@ -741,6 +741,12 @@ public:
                   searchWindowHeight, lostModeOption, frameBufferSize,
                   maxFramesInLostMode, rectAutoSize, rectAutoPosition,
                   multipleThreads, numChannels, type, custom1, custom2, custom3);
+
+    /// Default constructor.
+    VTrackerParams() = default;
+
+    /// Copy constructor.
+    VTrackerParams(const VTrackerParams& src) = default;
 
     /// operator =
     VTrackerParams& operator= (const VTrackerParams& src);
