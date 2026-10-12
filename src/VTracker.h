@@ -177,7 +177,7 @@ public:
                   type,
                   custom1,
                   custom2,
-                  custom3);
+                  custom3)
 
     /**
      * @brief Default constructor.
