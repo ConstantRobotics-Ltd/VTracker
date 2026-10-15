@@ -1,5 +1,201 @@
+// Implementation of the VTracker interface helpers: version, serialization of
+// video tracker params and encoding/decoding of commands. The library does no
+// I/O, no logging and does not allocate memory. All data received from outside
+// (VTrackerParams::decode(...), VTracker::decodeCommand(...)) is checked
+// before it is used.
 #include "VTracker.h"
 #include "VTrackerVersion.h"
+#include <array>
+#include <cstdint>
+#include <cstring>
+#include <limits>
+#include <string>
+
+
+
+namespace
+{
+// Encoded data stores int and float fields as raw 4 bytes values.
+static_assert(sizeof(int) == 4, "int must be 4 bytes");
+static_assert(sizeof(float) == 4, "float must be 4 bytes");
+// Library version is stored in the encoded data as two bytes.
+static_assert(VTRACKER_MAJOR_VERSION >= 0 &&
+              VTRACKER_MAJOR_VERSION <= std::numeric_limits<uint8_t>::max(),
+              "major version must fit in one byte");
+static_assert(VTRACKER_MINOR_VERSION >= 0 &&
+              VTRACKER_MINOR_VERSION <= std::numeric_limits<uint8_t>::max(),
+              "minor version must fit in one byte");
+
+/// Number of bits in a byte.
+constexpr int BITS_IN_BYTE{8};
+/// Size of an int or float field in the encoded data, bytes.
+constexpr int VALUE_SIZE{4};
+/// Size of a bool field in the encoded data, bytes.
+constexpr int FLAG_SIZE{1};
+/// Number of bool fields of VTrackerParams.
+constexpr int FLAGS_NUMBER{3};
+/// Number of int and float fields of VTrackerParams.
+constexpr int VALUES_NUMBER{31};
+/// Total number of fields of VTrackerParams (and of flags in the mask).
+constexpr int FIELDS_NUMBER{FLAGS_NUMBER + VALUES_NUMBER};
+
+/// Data type byte of encoded params.
+constexpr uint8_t PARAMS_DATA_TYPE{0x02};
+/// Position of the fields mask in the encoded params: after the data type
+/// byte and two version bytes.
+constexpr int PARAMS_MASK_POS{3};
+/// Size of the fields mask, bytes (one bit per field, first field is the most
+/// significant bit of the first byte).
+constexpr int PARAMS_MASK_SIZE{5};
+/// Size of the encoded params header: data type, version and mask.
+constexpr int PARAMS_HEADER_SIZE{PARAMS_MASK_POS + PARAMS_MASK_SIZE};
+/// Maximum size of the encoded params (all fields encoded).
+constexpr int PARAMS_MAX_SIZE{PARAMS_HEADER_SIZE + VALUES_NUMBER * VALUE_SIZE +
+                              FLAGS_NUMBER * FLAG_SIZE};
+static_assert(PARAMS_MAX_SIZE == 135, "wrong size of encoded params");
+static_assert(FIELDS_NUMBER <= PARAMS_MASK_SIZE * BITS_IN_BYTE,
+              "mask is too small");
+
+/// Data type byte of an encoded command.
+constexpr uint8_t COMMAND_DATA_TYPE{0x00};
+/// Data type byte of an encoded set param command.
+constexpr uint8_t SET_PARAM_DATA_TYPE{0x01};
+/// Size of an encoded command, bytes: header (3), ID (4), three arguments.
+constexpr int COMMAND_SIZE{19};
+/// Size of an encoded set param command, bytes: header (3), ID (4), value (4).
+constexpr int SET_PARAM_COMMAND_SIZE{11};
+/// Position of the command ID in an encoded command and in an encoded set
+/// param command: after the data type byte and two version bytes.
+constexpr int COMMAND_ID_POS{3};
+/// Position of the first command argument (or of the param value in a set
+/// param command) and of the next two arguments.
+constexpr int COMMAND_ARG1_POS{COMMAND_ID_POS + VALUE_SIZE};
+constexpr int COMMAND_ARG2_POS{COMMAND_ARG1_POS + VALUE_SIZE};
+constexpr int COMMAND_ARG3_POS{COMMAND_ARG2_POS + VALUE_SIZE};
+static_assert(COMMAND_ARG3_POS + VALUE_SIZE == COMMAND_SIZE,
+              "wrong size of encoded command");
+static_assert(COMMAND_ARG1_POS + VALUE_SIZE == SET_PARAM_COMMAND_SIZE,
+              "wrong size of encoded set param command");
+/// Value of a mask byte with all bits set and of the most significant bit.
+constexpr uint8_t FULL_MASK_BYTE{0xFF};
+constexpr int FIRST_MASK_BIT{0x80};
+
+
+
+/// Location of a VTrackerParams field in the encoded data.
+struct FieldRef
+{
+    /// Pointer to the field of a VTrackerParams object.
+    void* value{nullptr};
+    /// Size of the field in the encoded data: VALUE_SIZE or FLAG_SIZE.
+    int size{0};
+};
+
+
+
+/// Get the table of VTrackerParams fields in the order they are stored in the
+/// encoded data (the same order as the bits of the mask).
+std::array<FieldRef, FIELDS_NUMBER> makeFieldTable(
+        cr::vtracker::VTrackerParams& p)
+{
+    return {{
+        {&p.mode, VALUE_SIZE},
+        {&p.rectX, VALUE_SIZE},
+        {&p.rectY, VALUE_SIZE},
+        {&p.rectWidth, VALUE_SIZE},
+        {&p.rectHeight, VALUE_SIZE},
+        {&p.objectX, VALUE_SIZE},
+        {&p.objectY, VALUE_SIZE},
+        {&p.objectWidth, VALUE_SIZE},
+        {&p.objectHeight, VALUE_SIZE},
+        {&p.lostModeFrameCounter, VALUE_SIZE},
+        {&p.frameCounter, VALUE_SIZE},
+        {&p.frameWidth, VALUE_SIZE},
+        {&p.frameHeight, VALUE_SIZE},
+        {&p.searchWindowWidth, VALUE_SIZE},
+        {&p.searchWindowHeight, VALUE_SIZE},
+        {&p.searchWindowX, VALUE_SIZE},
+        {&p.searchWindowY, VALUE_SIZE},
+        {&p.lostModeOption, VALUE_SIZE},
+        {&p.frameBufferSize, VALUE_SIZE},
+        {&p.maxFramesInLostMode, VALUE_SIZE},
+        {&p.processedFrameId, VALUE_SIZE},
+        {&p.frameId, VALUE_SIZE},
+        {&p.velX, VALUE_SIZE},
+        {&p.velY, VALUE_SIZE},
+        {&p.detectionProbability, VALUE_SIZE},
+        {&p.rectAutoSize, FLAG_SIZE},
+        {&p.rectAutoPosition, FLAG_SIZE},
+        {&p.multipleThreads, FLAG_SIZE},
+        {&p.numChannels, VALUE_SIZE},
+        {&p.type, VALUE_SIZE},
+        {&p.processingTimeMks, VALUE_SIZE},
+        {&p.custom1, VALUE_SIZE},
+        {&p.custom2, VALUE_SIZE},
+        {&p.custom3, VALUE_SIZE}
+    }};
+}
+
+
+
+/// Get the table of mask flags in the same order as makeFieldTable(...).
+std::array<const bool*, FIELDS_NUMBER> makeFlagTable(
+        const cr::vtracker::VTrackerParamsMask& m)
+{
+    return {{
+        &m.mode,
+        &m.rectX,
+        &m.rectY,
+        &m.rectWidth,
+        &m.rectHeight,
+        &m.objectX,
+        &m.objectY,
+        &m.objectWidth,
+        &m.objectHeight,
+        &m.lostModeFrameCounter,
+        &m.frameCounter,
+        &m.frameWidth,
+        &m.frameHeight,
+        &m.searchWindowWidth,
+        &m.searchWindowHeight,
+        &m.searchWindowX,
+        &m.searchWindowY,
+        &m.lostModeOption,
+        &m.frameBufferSize,
+        &m.maxFramesInLostMode,
+        &m.processedFrameId,
+        &m.frameId,
+        &m.velX,
+        &m.velY,
+        &m.detectionProbability,
+        &m.rectAutoSize,
+        &m.rectAutoPosition,
+        &m.multipleThreads,
+        &m.numChannels,
+        &m.type,
+        &m.processingTimeMks,
+        &m.custom1,
+        &m.custom2,
+        &m.custom3
+    }};
+}
+
+
+
+/// Get the byte of the mask and the bit inside the byte for a field index.
+/// The first field is the most significant bit of the first byte.
+constexpr int maskByteIndex(int fieldIndex)
+{
+    return fieldIndex / BITS_IN_BYTE;
+}
+
+
+
+constexpr int maskBit(int fieldIndex)
+{
+    return FIRST_MASK_BIT >> (fieldIndex % BITS_IN_BYTE);
+}
+}
 
 
 
@@ -17,317 +213,62 @@ std::string cr::vtracker::VTracker::getVersion()
 
 
 
-cr::vtracker::VTrackerParams &cr::vtracker::VTrackerParams::operator= (const cr::vtracker::VTrackerParams &src)
-{
-    // Check yourself.
-    if (this == &src)
-        return *this;
-
-    mode = src.mode;
-    rectX = src.rectX;
-    rectY = src.rectY;
-    rectWidth = src.rectWidth;
-    rectHeight = src.rectHeight;
-    objectX = src.objectX;
-    objectY = src.objectY;
-    objectWidth = src.objectWidth;
-
-    objectHeight = src.objectHeight;
-    lostModeFrameCounter = src.lostModeFrameCounter;
-    frameCounter = src.frameCounter;
-    frameWidth = src.frameWidth;
-    frameHeight = src.frameHeight;
-    searchWindowWidth = src.searchWindowWidth;
-    searchWindowHeight = src.searchWindowHeight;
-    searchWindowX = src.searchWindowX;
-
-    searchWindowY = src.searchWindowY;
-    lostModeOption = src.lostModeOption;
-    frameBufferSize = src.frameBufferSize;
-    maxFramesInLostMode = src.maxFramesInLostMode;
-    processedFrameId = src.processedFrameId;
-    frameId = src.frameId;
-    velX = src.velX;
-    velY = src.velY;
-
-    detectionProbability = src.detectionProbability;
-    rectAutoSize = src.rectAutoSize;
-    rectAutoPosition = src.rectAutoPosition;
-    multipleThreads = src.multipleThreads;
-    numChannels = src.numChannels;
-    type = src.type;
-    processingTimeMks = src.processingTimeMks;
-    custom1 = src.custom1;
-
-    custom2 = src.custom2;
-    custom3 = src.custom3;
-
-    return *this;
-}
-
-
-
 bool cr::vtracker::VTrackerParams::encode(
         uint8_t* data, int bufferSize,
         int& size, cr::vtracker::VTrackerParamsMask* mask)
 {
-    // Check buffer size.
-    if (bufferSize < 135)
+    // Check the buffer: it must be able to hold all fields, so the output
+    // never depends on the mask and cannot overflow the buffer.
+    size = 0;
+    if (data == nullptr || bufferSize < PARAMS_MAX_SIZE)
     {
-        size = 0;
         return false;
     }
 
-    // Encode version.
-    int pos = 0;
-    data[pos] = 0x02; pos += 1;
-    data[pos] = VTRACKER_MAJOR_VERSION; pos += 1;
-    data[pos] = VTRACKER_MINOR_VERSION; pos += 1;
+    // Encode data type and version.
+    data[0] = PARAMS_DATA_TYPE;
+    data[1] = static_cast<uint8_t>(VTRACKER_MAJOR_VERSION);
+    data[2] = static_cast<uint8_t>(VTRACKER_MINOR_VERSION);
 
-    if (mask == nullptr)
+    // Prepare mask. Without the mask all bits (including unused) are set.
+    const cr::vtracker::VTrackerParamsMask allFields;
+    const auto flags = makeFlagTable(mask != nullptr ? *mask : allFields);
+    for (int i = 0; i < PARAMS_MASK_SIZE; ++i)
     {
-        // Prepare mask.
-        data[pos] = 0xFF; pos += 1;
-        data[pos] = 0xFF; pos += 1;
-        data[pos] = 0xFF; pos += 1;
-        data[pos] = 0xFF; pos += 1;
-        data[pos] = 0xFF; pos += 1;
-
-        // Encode data.
-        memcpy(&data[pos], &mode, 4); pos += 4;
-        memcpy(&data[pos], &rectX, 4); pos += 4;
-        memcpy(&data[pos], &rectY, 4); pos += 4;
-        memcpy(&data[pos], &rectWidth, 4); pos += 4;
-        memcpy(&data[pos], &rectHeight, 4); pos += 4;
-        memcpy(&data[pos], &objectX, 4); pos += 4;
-        memcpy(&data[pos], &objectY, 4); pos += 4;
-        memcpy(&data[pos], &objectWidth, 4); pos += 4;
-
-        memcpy(&data[pos], &objectHeight, 4); pos += 4;
-        memcpy(&data[pos], &lostModeFrameCounter, 4); pos += 4;
-        memcpy(&data[pos], &frameCounter, 4); pos += 4;
-        memcpy(&data[pos], &frameWidth, 4); pos += 4;
-        memcpy(&data[pos], &frameHeight, 4); pos += 4;
-        memcpy(&data[pos], &searchWindowWidth, 4); pos += 4;
-        memcpy(&data[pos], &searchWindowHeight, 4); pos += 4;
-        memcpy(&data[pos], &searchWindowX, 4); pos += 4;
-
-        memcpy(&data[pos], &searchWindowY, 4); pos += 4;
-        memcpy(&data[pos], &lostModeOption, 4); pos += 4;
-        memcpy(&data[pos], &frameBufferSize, 4); pos += 4;
-        memcpy(&data[pos], &maxFramesInLostMode, 4); pos += 4;
-        memcpy(&data[pos], &processedFrameId, 4); pos += 4;
-        memcpy(&data[pos], &frameId, 4); pos += 4;
-        memcpy(&data[pos], &velX, 4); pos += 4;
-        memcpy(&data[pos], &velY, 4); pos += 4;
-
-        memcpy(&data[pos], &detectionProbability, 4); pos += 4;
-        data[pos] = rectAutoSize == true ? 0x01 : 0x00; pos += 1;
-        data[pos] = rectAutoPosition == true ? 0x01 : 0x00; pos += 1;
-        data[pos] = multipleThreads == true ? 0x01 : 0x00; pos += 1;
-        memcpy(&data[pos], &numChannels, 4); pos += 4;
-        memcpy(&data[pos], &type, 4); pos += 4;
-        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
-        memcpy(&data[pos], &custom1, 4); pos += 4;
-
-        memcpy(&data[pos], &custom2, 4); pos += 4;
-        memcpy(&data[pos], &custom3, 4); pos += 4;   
-
-        size = pos;
-
-        return true;
+        data[PARAMS_MASK_POS + i] =
+                mask == nullptr ? FULL_MASK_BYTE : uint8_t{0x00};
+    }
+    if (mask != nullptr)
+    {
+        for (int i = 0; i < FIELDS_NUMBER; ++i)
+        {
+            if (*flags[static_cast<size_t>(i)])
+            {
+                uint8_t& maskByte = data[PARAMS_MASK_POS + maskByteIndex(i)];
+                maskByte = static_cast<uint8_t>(maskByte | maskBit(i));
+            }
+        }
     }
 
-    // Prepare mask.
-    data[pos] = 0;
-    data[pos] = data[pos] | (mask->mode ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectX ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectY ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectWidth ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectHeight ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->objectX ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->objectY ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->objectWidth ? (uint8_t)1 : (uint8_t)0);
-    pos += 1;
-    data[pos] = 0;
-    data[pos] = data[pos] | (mask->objectHeight ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->lostModeFrameCounter ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameCounter ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameWidth ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameHeight ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->searchWindowWidth ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->searchWindowHeight ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->searchWindowX ? (uint8_t)1 : (uint8_t)0);
-    pos += 1;
-    data[pos] = 0;
-    data[pos] = data[pos] | (mask->searchWindowY ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->lostModeOption ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameBufferSize ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->maxFramesInLostMode ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->processedFrameId ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->frameId ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->velX ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->velY ? (uint8_t)1 : (uint8_t)0);
-    pos += 1;
-    data[pos] = 0;
-    data[pos] = data[pos] | (mask->detectionProbability ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectAutoSize ? (uint8_t)64 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->rectAutoPosition ? (uint8_t)32 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->multipleThreads ? (uint8_t)16 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->numChannels ? (uint8_t)8 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->type ? (uint8_t)4 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->processingTimeMks ? (uint8_t)2 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->custom1 ? (uint8_t)1 : (uint8_t)0);
-    pos += 1;
-    data[pos] = 0;
-    data[pos] = data[pos] | (mask->custom2 ? (uint8_t)128 : (uint8_t)0);
-    data[pos] = data[pos] | (mask->custom3 ? (uint8_t)64 : (uint8_t)0);
-    pos += 1;
-
-    if (mask->mode)
+    // Encode fields selected by the mask.
+    const auto fields = makeFieldTable(*this);
+    int pos = PARAMS_HEADER_SIZE;
+    for (size_t i = 0; i < fields.size(); ++i)
     {
-        memcpy(&data[pos], &mode, 4); pos += 4;
-    }
-    if (mask->rectX)
-    {
-        memcpy(&data[pos], &rectX, 4); pos += 4;
-    }
-    if (mask->rectY)
-    {
-        memcpy(&data[pos], &rectY, 4); pos += 4;
-    }
-    if (mask->rectWidth)
-    {
-        memcpy(&data[pos], &rectWidth, 4); pos += 4;
-    }
-    if (mask->rectHeight)
-    {
-        memcpy(&data[pos], &rectHeight, 4); pos += 4;
-    }
-    if (mask->objectX)
-    {
-        memcpy(&data[pos], &objectX, 4); pos += 4;
-    }
-    if (mask->objectY)
-    {
-        memcpy(&data[pos], &objectY, 4); pos += 4;
-    }
-    if (mask->objectWidth)
-    {
-        memcpy(&data[pos], &objectWidth, 4); pos += 4;
-    }
-
-
-    if (mask->objectHeight)
-    {
-        memcpy(&data[pos], &objectHeight, 4); pos += 4;
-    }
-    if (mask->lostModeFrameCounter)
-    {
-        memcpy(&data[pos], &lostModeFrameCounter, 4); pos += 4;
-    }
-    if (mask->frameCounter)
-    {
-        memcpy(&data[pos], &frameCounter, 4); pos += 4;
-    }
-    if (mask->frameWidth)
-    {
-        memcpy(&data[pos], &frameWidth, 4); pos += 4;
-    }
-    if (mask->frameHeight)
-    {
-        memcpy(&data[pos], &frameHeight, 4); pos += 4;
-    }
-    if (mask->searchWindowWidth)
-    {
-        memcpy(&data[pos], &searchWindowWidth, 4); pos += 4;
-    }
-    if (mask->searchWindowHeight)
-    {
-        memcpy(&data[pos], &searchWindowHeight, 4); pos += 4;
-    }
-    if (mask->searchWindowX)
-    {
-        memcpy(&data[pos], &searchWindowX, 4); pos += 4;
-    }
-
-
-    if (mask->searchWindowY)
-    {
-        memcpy(&data[pos], &searchWindowY, 4); pos += 4;
-    }
-    if (mask->lostModeOption)
-    {
-        memcpy(&data[pos], &lostModeOption, 4); pos += 4;
-    }
-    if (mask->frameBufferSize)
-    {
-        memcpy(&data[pos], &frameBufferSize, 4); pos += 4;
-    }
-    if (mask->maxFramesInLostMode)
-    {
-        memcpy(&data[pos], &maxFramesInLostMode, 4); pos += 4;
-    }
-    if (mask->processedFrameId)
-    {
-        memcpy(&data[pos], &processedFrameId, 4); pos += 4;
-    }
-    if (mask->frameId)
-    {
-        memcpy(&data[pos], &frameId, 4); pos += 4;
-    }
-    if (mask->velX)
-    {
-        memcpy(&data[pos], &velX, 4); pos += 4;
-    }
-    if (mask->velY)
-    {
-        memcpy(&data[pos], &velY, 4); pos += 4;
-    }
-
-
-
-    if (mask->detectionProbability)
-    {
-        memcpy(&data[pos], &detectionProbability, 4); pos += 4;
-    }
-    if (mask->rectAutoSize)
-    {
-        data[pos] = rectAutoSize == true ? 0x01 : 0x00; pos += 1;
-    }
-    if (mask->rectAutoPosition)
-    {
-        data[pos] = rectAutoPosition == true ? 0x01 : 0x00; pos += 1;
-    }
-    if (mask->multipleThreads)
-    {
-        data[pos] = multipleThreads == true ? 0x01 : 0x00; pos += 1;
-    }
-    if (mask->numChannels)
-    {
-        memcpy(&data[pos], &numChannels, 4); pos += 4;
-    }
-    if (mask->type)
-    {
-        memcpy(&data[pos], &type, 4); pos += 4;
-    }
-    if (mask->processingTimeMks)
-    {
-        memcpy(&data[pos], &processingTimeMks, 4); pos += 4;
-    }
-    if (mask->custom1)
-    {
-        memcpy(&data[pos], &custom1, 4); pos += 4;
-    }
-
-
-    if (mask->custom2)
-    {
-        memcpy(&data[pos], &custom2, 4); pos += 4;
-    }
-    if (mask->custom3)
-    {
-        memcpy(&data[pos], &custom3, 4); pos += 4;
+        if (!*flags[i])
+        {
+            continue;
+        }
+        if (fields[i].size == FLAG_SIZE)
+        {
+            const bool flag = *static_cast<const bool*>(fields[i].value);
+            data[pos] = flag ? uint8_t{0x01} : uint8_t{0x00};
+        }
+        else
+        {
+            std::memcpy(&data[pos], fields[i].value, VALUE_SIZE);
+        }
+        pos += fields[i].size;
     }
 
     size = pos;
@@ -339,374 +280,55 @@ bool cr::vtracker::VTrackerParams::encode(
 
 bool cr::vtracker::VTrackerParams::decode(uint8_t* data, int dataSize)
 {
-    // Check data size.
-    if (dataSize < 8)
+    // Check data size (header must be complete) and header.
+    if (data == nullptr || dataSize < PARAMS_HEADER_SIZE)
+    {
         return false;
-
-    // Check header.
-    if (data[0] != 0x02)
+    }
+    if (data[0] != PARAMS_DATA_TYPE)
+    {
         return false;
-
-    // Check version version.
+    }
     if (data[1] != VTRACKER_MAJOR_VERSION || data[2] != VTRACKER_MINOR_VERSION)
+    {
         return false;
-
-
-
-
-    // Decode data.
-    int pos = 8;
-    if ((data[3] & (uint8_t)128) == (uint8_t)128)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&mode, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        mode = 0;
-    }
-    if ((data[3] & (uint8_t)64) == (uint8_t)64)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&rectX, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        rectX = 0;
-    }
-    if ((data[3] & (uint8_t)32) == (uint8_t)32)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&rectY, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        rectY = 0;
-    }
-    if ((data[3] & (uint8_t)16) == (uint8_t)16)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&rectWidth, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        rectWidth = 0;
-    }
-    if ((data[3] & (uint8_t)8) == (uint8_t)8)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&rectHeight, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        rectHeight = 0;
-    }
-    if ((data[3] & (uint8_t)4) == (uint8_t)4)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&objectX, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        objectX = 0;
-    }
-    if ((data[3] & (uint8_t)2) == (uint8_t)2)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&objectY, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        objectY = 0;
-    }
-    if ((data[3] & (uint8_t)1) == (uint8_t)1)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&objectWidth, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        objectWidth = 0;
     }
 
+    // Decode into a temporary object: this object is changed only if the
+    // whole data is valid. Fields not selected by the mask are set to zero.
+    VTrackerParams result;
+    const auto fields = makeFieldTable(result);
+    int pos = PARAMS_HEADER_SIZE;
+    for (int i = 0; i < FIELDS_NUMBER; ++i)
+    {
+        const FieldRef& field = fields[static_cast<size_t>(i)];
+        const bool encoded =
+                (data[PARAMS_MASK_POS + maskByteIndex(i)] & maskBit(i)) != 0;
+        if (!encoded)
+        {
+            std::memset(field.value, 0, static_cast<size_t>(field.size));
+            continue;
+        }
 
-
-    if ((data[4] & (uint8_t)128) == (uint8_t)128)
-    {
-        if (dataSize < pos + 4)
+        // Check that the field is inside the data (an attack on the size is
+        // prevented here: the position never exceeds PARAMS_MAX_SIZE).
+        if (dataSize - pos < field.size)
+        {
             return false;
-        memcpy(&objectHeight, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        objectHeight = 0;
-    }
-    if ((data[4] & (uint8_t)64) == (uint8_t)64)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&lostModeFrameCounter, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        lostModeFrameCounter = 0;
-    }
-    if ((data[4] & (uint8_t)32) == (uint8_t)32)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&frameCounter, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        frameCounter = 0;
-    }
-    if ((data[4] & (uint8_t)16) == (uint8_t)16)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&frameWidth, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        frameWidth = 0;
-    }
-    if ((data[4] & (uint8_t)8) == (uint8_t)8)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&frameHeight, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        frameHeight = 0;
-    }
-    if ((data[4] & (uint8_t)4) == (uint8_t)4)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&searchWindowWidth, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        searchWindowWidth = 0;
-    }
-    if ((data[4] & (uint8_t)2) == (uint8_t)2)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&searchWindowHeight, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        searchWindowHeight = 0;
-    }
-    if ((data[4] & (uint8_t)1) == (uint8_t)1)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&searchWindowX, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        searchWindowX = 0;
+        }
+        if (field.size == FLAG_SIZE)
+        {
+            *static_cast<bool*>(field.value) = data[pos] != 0x00;
+        }
+        else
+        {
+            std::memcpy(field.value, &data[pos], VALUE_SIZE);
+        }
+        pos += field.size;
     }
 
+    *this = result;
 
-
-    if ((data[5] & (uint8_t)128) == (uint8_t)128)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&searchWindowY, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        searchWindowY = 0;
-    }
-    if ((data[5] & (uint8_t)64) == (uint8_t)64)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&lostModeOption, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        lostModeOption = 0;
-    }
-    if ((data[5] & (uint8_t)32) == (uint8_t)32)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&frameBufferSize, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        frameBufferSize = 0;
-    }
-    if ((data[5] & (uint8_t)16) == (uint8_t)16)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&maxFramesInLostMode, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        maxFramesInLostMode = 0;
-    }
-    if ((data[5] & (uint8_t)8) == (uint8_t)8)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&processedFrameId, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        processedFrameId = 0;
-    }
-    if ((data[5] & (uint8_t)4) == (uint8_t)4)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&frameId, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        frameId = 0;
-    }
-    if ((data[5] & (uint8_t)2) == (uint8_t)2)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&velX, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        velX = 0.0f;
-    }
-    if ((data[5] & (uint8_t)1) == (uint8_t)1)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&velY, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        velY = 0.0f;
-    }
-
-
-
-    if ((data[6] & (uint8_t)128) == (uint8_t)128)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&detectionProbability, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        detectionProbability = 0.0f;
-    }
-    if ((data[6] & (uint8_t)64) == (uint8_t)64)
-    {
-        if (dataSize < pos + 1)
-            return false;
-        rectAutoSize = data[pos] == 0x00 ? false : true; pos += 1;
-    }
-    else
-    {
-        rectAutoSize = false;
-    }
-    if ((data[6] & (uint8_t)32) == (uint8_t)32)
-    {
-        if (dataSize < pos + 1)
-            return false;
-        rectAutoPosition = data[pos] == 0x00 ? false : true; pos += 1;
-    }
-    else
-    {
-        rectAutoPosition = false;
-    }
-    if ((data[6] & (uint8_t)16) == (uint8_t)16)
-    {
-        if (dataSize < pos + 1)
-            return false;
-       multipleThreads = data[pos] == 0x00 ? false : true; pos += 1;
-    }
-    else
-    {
-        multipleThreads = false;
-    }
-    if ((data[6] & (uint8_t)8) == (uint8_t)8)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&numChannels, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        numChannels = 0;
-    }
-    if ((data[6] & (uint8_t)4) == (uint8_t)4)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&type, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        type = 0;
-    }
-    if ((data[6] & (uint8_t)2) == (uint8_t)2)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&processingTimeMks, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        processingTimeMks = 0;
-    }
-    if ((data[6] & (uint8_t)1) == (uint8_t)1)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&custom1, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        custom1 = 0.0f;
-    }
-
-    if ((data[7] & (uint8_t)128) == (uint8_t)128)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&custom2, &data[pos], 4); pos += 4;
-    }
-    else
-    {
-        custom2 = 0.0f;
-    }
-    if ((data[7] & (uint8_t)64) == (uint8_t)64)
-    {
-        if (dataSize < pos + 4)
-            return false;
-        memcpy(&custom3, &data[pos], 4);
-    }
-    else
-    {
-        custom3 = 0.0f;
-    }
-    
     return true;
 }
 
@@ -715,16 +337,23 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data, int dataSize)
 void cr::vtracker::VTracker::encodeSetParamCommand(
         uint8_t* data, int& size, cr::vtracker::VTrackerParam id, float value)
 {
+    // Check the buffer pointer.
+    size = 0;
+    if (data == nullptr)
+    {
+        return;
+    }
+
     // Fill header.
-    data[0] = 0x01;
-    data[1] = VTRACKER_MAJOR_VERSION;
-    data[2] = VTRACKER_MINOR_VERSION;
+    data[0] = SET_PARAM_DATA_TYPE;
+    data[1] = static_cast<uint8_t>(VTRACKER_MAJOR_VERSION);
+    data[2] = static_cast<uint8_t>(VTRACKER_MINOR_VERSION);
 
     // Fill data.
-    int paramId = (int)id;
-    memcpy(&data[3], &paramId, 4);
-    memcpy(&data[7], &value, 4);
-    size = 11;
+    const int paramId = static_cast<int>(id);
+    std::memcpy(&data[COMMAND_ID_POS], &paramId, VALUE_SIZE);
+    std::memcpy(&data[COMMAND_ARG1_POS], &value, VALUE_SIZE);
+    size = SET_PARAM_COMMAND_SIZE;
 }
 
 
@@ -733,18 +362,25 @@ void cr::vtracker::VTracker::encodeCommand(
         uint8_t* data, int& size, VTrackerCommand id,
         float arg1, float arg2, float arg3)
 {
+    // Check the buffer pointer.
+    size = 0;
+    if (data == nullptr)
+    {
+        return;
+    }
+
     // Fill header.
-    data[0] = 0x00;
-    data[1] = VTRACKER_MAJOR_VERSION;
-    data[2] = VTRACKER_MINOR_VERSION;
+    data[0] = COMMAND_DATA_TYPE;
+    data[1] = static_cast<uint8_t>(VTRACKER_MAJOR_VERSION);
+    data[2] = static_cast<uint8_t>(VTRACKER_MINOR_VERSION);
 
     // Fill data.
-    int commandId = (int)id;
-    memcpy(&data[3], &commandId, 4);
-    memcpy(&data[7], &arg1, 4);
-    memcpy(&data[11], &arg2, 4);
-    memcpy(&data[15], &arg3, 4);
-    size = 19;
+    const int commandId = static_cast<int>(id);
+    std::memcpy(&data[COMMAND_ID_POS], &commandId, VALUE_SIZE);
+    std::memcpy(&data[COMMAND_ARG1_POS], &arg1, VALUE_SIZE);
+    std::memcpy(&data[COMMAND_ARG2_POS], &arg2, VALUE_SIZE);
+    std::memcpy(&data[COMMAND_ARG3_POS], &arg3, VALUE_SIZE);
+    size = COMMAND_SIZE;
 }
 
 
@@ -758,48 +394,68 @@ int cr::vtracker::VTracker::decodeCommand(
                             float& value2,
                             float& value3)
 {
-    // Check size.
-    if (size < 11)
+    // Check pointer and size (the shortest command is set param command).
+    if (data == nullptr || size < SET_PARAM_COMMAND_SIZE)
+    {
         return -1;
+    }
 
     // Check version.
     if (data[1] != VTRACKER_MAJOR_VERSION ||
         data[2] != VTRACKER_MINOR_VERSION)
+    {
         return -1;
+    }
 
     // Extract data.
     int id = 0;
-    memcpy(&id, &data[3], 4);
+    std::memcpy(&id, &data[COMMAND_ID_POS], VALUE_SIZE);
     value1 = 0.0f;
     value2 = 0.0f;
     value3 = 0.0f;
 
     // Check command type.
-    if (data[0] == 0x00)
+    if (data[0] == COMMAND_DATA_TYPE)
     {
-        // Check size.
-        if (size != 19)
-            return false;
+        // Check size. A command has exactly one valid size.
+        if (size != COMMAND_SIZE)
+        {
+            return -1;
+        }
+
+        // Check command ID: unknown IDs are not passed to the implementation.
+        if (id < static_cast<int>(VTrackerCommand::CAPTURE) ||
+            id > static_cast<int>(VTrackerCommand::CHANGE_RECT_SIZE))
+        {
+            return -1;
+        }
 
         // Decode command ID and arguments.
-        commandId = (VTrackerCommand)id;
-        memcpy(&value1, &data[7], 4);
-        memcpy(&value2, &data[11], 4);
-        memcpy(&value3, &data[15], 4);
+        commandId = static_cast<VTrackerCommand>(id);
+        std::memcpy(&value1, &data[COMMAND_ARG1_POS], VALUE_SIZE);
+        std::memcpy(&value2, &data[COMMAND_ARG2_POS], VALUE_SIZE);
+        std::memcpy(&value3, &data[COMMAND_ARG3_POS], VALUE_SIZE);
         return 0;
     }
-    else if (data[0] == 0x01)
+    if (data[0] == SET_PARAM_DATA_TYPE)
     {
-        // Check size.
-        if (size != 11)
-            return false;
+        // Check size. A set param command has exactly one valid size.
+        if (size != SET_PARAM_COMMAND_SIZE)
+        {
+            return -1;
+        }
 
-        paramId = (VTrackerParam)id;
-        memcpy(&value1, &data[7], 4);
+        // Check param ID: unknown IDs are not passed to the implementation.
+        if (id < static_cast<int>(VTrackerParam::SEARCH_WINDOW_WIDTH) ||
+            id > static_cast<int>(VTrackerParam::CUSTOM_3))
+        {
+            return -1;
+        }
+
+        paramId = static_cast<VTrackerParam>(id);
+        std::memcpy(&value1, &data[COMMAND_ARG1_POS], VALUE_SIZE);
         return 1;
     }
 
     return -1;
 }
-
-
