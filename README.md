@@ -1085,8 +1085,6 @@ On Windows use `cmake --build . --config Release` instead of `make`. The test ap
 | ${PARENT}_SUBMODULE_CACHE_OVERWRITE  | ON                                               | Forced rewriting of the options above in the CMake cache. The top-level project should set it to OFF when it includes **VTracker** as a sub-repository. |
 | CMAKE_BUILD_TYPE                     | Release (if not specified)                       | Build type.                                                  |
 
-The library has no macros which change the code. All targets of the repository are built with the warning and hardening options described in the [Security and hardening](#security-and-hardening) section.
-
 
 
 ## Connect to your project

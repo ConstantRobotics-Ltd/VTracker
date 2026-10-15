@@ -1,8 +1,3 @@
-// Implementation of the VTracker interface helpers: version, serialization of
-// video tracker params and encoding/decoding of commands. The library does no
-// I/O, no logging and does not allocate memory. All data received from outside
-// (VTrackerParams::decode(...), VTracker::decodeCommand(...)) is checked
-// before it is used.
 #include "VTracker.h"
 #include "VTrackerVersion.h"
 #include <array>
