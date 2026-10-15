@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include <string>
 #include "Frame.h"
 #include "ConfigReader.h"
 
@@ -10,49 +12,55 @@ namespace vtracker
 {
 /**
  * @brief Mask structure for video tracker params.
+ *
+ * Each flag enables serialization of the VTrackerParams field with the same
+ * name (see VTrackerParams::encode(...)).
  */
 typedef struct VTrackerParamsMask
 {
-    bool mode{true};
-    bool rectX{true};
-    bool rectY{true};
-    bool rectWidth{true};
-    bool rectHeight{true};
-    bool objectX{true};
-    bool objectY{true};
-    bool objectWidth{true};
-    bool objectHeight{true};
-    bool lostModeFrameCounter{true};
-    bool frameCounter{true};
-    bool frameWidth{true};
-    bool frameHeight{true};
-    bool searchWindowWidth{true};
-    bool searchWindowHeight{true};
-    bool searchWindowX{true};
-    bool searchWindowY{true};
-    bool lostModeOption{true};
-    bool frameBufferSize{true};
-    bool maxFramesInLostMode{true};
-    bool processedFrameId{true};
-    bool frameId{true};
-    bool velX{true};
-    bool velY{true};
-    bool detectionProbability{true};
-    bool rectAutoSize{true};
-    bool rectAutoPosition{true};
-    bool multipleThreads{true};
-    bool numChannels{true};
-    bool type{true};
-    bool processingTimeMks{true};
-    bool custom1{true};
-    bool custom2{true};
-    bool custom3{true};
+    bool mode{true};                  ///< Serialize mode field.
+    bool rectX{true};                 ///< Serialize rectX field.
+    bool rectY{true};                 ///< Serialize rectY field.
+    bool rectWidth{true};             ///< Serialize rectWidth field.
+    bool rectHeight{true};            ///< Serialize rectHeight field.
+    bool objectX{true};               ///< Serialize objectX field.
+    bool objectY{true};               ///< Serialize objectY field.
+    bool objectWidth{true};           ///< Serialize objectWidth field.
+    bool objectHeight{true};          ///< Serialize objectHeight field.
+    bool lostModeFrameCounter{true};  ///< Serialize lostModeFrameCounter field.
+    bool frameCounter{true};          ///< Serialize frameCounter field.
+    bool frameWidth{true};            ///< Serialize frameWidth field.
+    bool frameHeight{true};           ///< Serialize frameHeight field.
+    bool searchWindowWidth{true};     ///< Serialize searchWindowWidth field.
+    bool searchWindowHeight{true};    ///< Serialize searchWindowHeight field.
+    bool searchWindowX{true};         ///< Serialize searchWindowX field.
+    bool searchWindowY{true};         ///< Serialize searchWindowY field.
+    bool lostModeOption{true};        ///< Serialize lostModeOption field.
+    bool frameBufferSize{true};       ///< Serialize frameBufferSize field.
+    bool maxFramesInLostMode{true};   ///< Serialize maxFramesInLostMode field.
+    bool processedFrameId{true};      ///< Serialize processedFrameId field.
+    bool frameId{true};               ///< Serialize frameId field.
+    bool velX{true};                  ///< Serialize velX field.
+    bool velY{true};                  ///< Serialize velY field.
+    bool detectionProbability{true};  ///< Serialize detectionProbability field.
+    bool rectAutoSize{true};          ///< Serialize rectAutoSize field.
+    bool rectAutoPosition{true};      ///< Serialize rectAutoPosition field.
+    bool multipleThreads{true};       ///< Serialize multipleThreads field.
+    bool numChannels{true};           ///< Serialize numChannels field.
+    bool type{true};                  ///< Serialize type field.
+    bool processingTimeMks{true};     ///< Serialize processingTimeMks field.
+    bool custom1{true};               ///< Serialize custom1 field.
+    bool custom2{true};               ///< Serialize custom2 field.
+    bool custom3{true};               ///< Serialize custom3 field.
 } VTrackerParamsMask;
 
 
 
 /**
  * @brief Video tracker params and processing results class.
+ *
+ * @note The class is not thread-safe: an object must not be accessed from
+ * several threads at the same time without external synchronization.
  */
 class VTrackerParams
 {
@@ -76,7 +84,7 @@ public:
     /// Estimated horizontal position of object center, pixels. Calculated by
     /// video tracker.
     int objectX{0};
-    /// Estimated vertical position of object center, pixels.Calculated by
+    /// Estimated vertical position of object center, pixels. Calculated by
     /// video tracker.
     int objectY{0};
     /// Estimated object width, pixels. Calculated by video tracker.
@@ -109,19 +117,19 @@ public:
     /// center but can be set by user to move search window for new video frame.
     int searchWindowY{0};
     /// Option for LOST mode. Parameter that defines the behavior of the
-    /// tracking  algorithm in LOST mode. Default is 0. Possible values:
-    /// 0. In LOST mode, the coordinates of the center of the  tracking
-    ///    rectangle are not updated and remain the  same as before entering
+    /// tracking algorithm in LOST mode. Default is 0. Possible values:
+    /// 0. In LOST mode, the coordinates of the center of the tracking
+    ///    rectangle are not updated and remain the same as before entering
     ///    LOST mode.
-    /// 1. The coordinates of the center of the tracking  rectangle are updated
-    ///    based on the components  of the object’s speed calculated before
-    ///    going into  LOST mode. If the tracking rectangle “touches” the  edge
-    ///    of the video frame, the coordinate updating  for this component
+    /// 1. The coordinates of the center of the tracking rectangle are updated
+    ///    based on the components of the object's speed calculated before
+    ///    going into LOST mode. If the tracking rectangle "touches" the edge
+    ///    of the video frame, the coordinate updating for this component
     ///    (horizontal or vertical) will stop.
-    /// 2. The coordinates of the center of the tracking  rectangle are
-    ///    updated based on the components  of the object’s speed calculated
-    ///    before going into  LOST mode. The tracking is reset if the center of 
-    ///    the tracking rectangle touches any of the edges of  the video frame.
+    /// 2. The coordinates of the center of the tracking rectangle are
+    ///    updated based on the components of the object's speed calculated
+    ///    before going into LOST mode. The tracking is reset if the center of
+    ///    the tracking rectangle touches any of the edges of the video frame.
     int lostModeOption{0};
     /// Size of frame buffer (number of frames to store). Set by user.
     int frameBufferSize{128};
@@ -136,7 +144,7 @@ public:
     /// by video tracker.
     float velX{0.0f};
     /// Vertical velocity of object on video frames (pixel/frame). Calculated
-    /// by video tracker. 
+    /// by video tracker.
     float velY{0.0f};
     /// Estimated probability of object detection. Calculated by video tracker.
     float detectionProbability{0.0f};
@@ -195,24 +203,43 @@ public:
      * @param src Source object.
      * @return VTrackerParams object.
      */
-    VTrackerParams& operator= (const VTrackerParams& src);
+    VTrackerParams& operator= (const VTrackerParams& src) = default;
 
     /**
-     * @brief Encode params.
-     * @param data Pointer to data buffer.
-     * @param bufferSize Data buffer size.
-     * @param size Size of data.
-     * @param mask Pointer to parameters mask.
-     * @return TRUE if data encoded (serialized) or FALSE if not.
+     * @brief Encode (serialize) params.
+     *
+     * The encoded data has a fixed layout: 1 byte data type (0x02), 2 bytes
+     * of library major and minor version, 5 bytes of fields mask and the
+     * fields selected by the mask. Integer and float fields are stored as
+     * 4 bytes in the byte order of the host (little endian), boolean fields
+     * as 1 byte (0 or 1).
+     *
+     * @param data Pointer to output data buffer. Must not be nullptr.
+     * @param bufferSize Size of the data buffer, bytes. Must be at least 135
+     * bytes (size of all fields).
+     * @param size Size of encoded data, bytes. Set to 0 if params were not
+     * encoded.
+     * @param mask Pointer to parameters mask. If nullptr all fields are
+     * encoded. A field with false flag is not encoded.
+     * @return TRUE if data encoded (serialized) or FALSE if not (data is
+     * nullptr or the buffer is too small).
      */
     bool encode(uint8_t* data, int bufferSize,
                 int& size, VTrackerParamsMask* mask = nullptr);
 
     /**
-     * @brief Decode params.
-     * @param data Pointer to data.
-     * @param dataSize Data size.
-     * @return TRUE is params decoded or FALSE if not.
+     * @brief Decode (deserialize) params encoded by encode(...) method.
+     *
+     * The method checks data type, version and size of the data before
+     * reading each field. Fields which are not present in the data are set to
+     * 0 (false for boolean fields). Values of fields are not checked against
+     * any range: the video tracker implementation must validate them before
+     * use. Bytes after the last decoded field are ignored.
+     *
+     * @param data Pointer to encoded data. Must not be nullptr.
+     * @param dataSize Size of the encoded data, bytes.
+     * @return TRUE if params decoded or FALSE if not. If FALSE is returned
+     * the object is not changed.
      */
     bool decode(uint8_t* data, int dataSize);
 };
@@ -221,6 +248,9 @@ public:
 
 /**
  * @brief Video tracker commands enum.
+ *
+ * @note CHANGE_RECT_SIZE must stay the last value: it is used by
+ * VTracker::decodeCommand(...) to reject unknown command IDs.
  */
 enum class VTrackerCommand
 {
@@ -256,7 +286,7 @@ enum class VTrackerCommand
     /// Set tracking rectangle position in FREE mode in percents of frame size.
     /// Arguments:
     /// arg1 - Rectangle center X coordinate, percents of frame width.
-    /// arg2 - Rectangle center X coordinate, percents of frame height.
+    /// arg2 - Rectangle center Y coordinate, percents of frame height.
     SET_RECT_POSITION_PERCENTS,
     /// Move search window (change position). Arguments:
     /// arg1 - add to X coordinate, pixels. 0 - no change.
@@ -268,7 +298,7 @@ enum class VTrackerCommand
     SET_SEARCH_WINDOW_POSITION,
     /// Set search window position in percents of frame size. Arguments:
     /// arg1 - Search window center X coordinate, percents of frame width.
-    /// arg2 - Search window center X coordinate, percents of frame height.
+    /// arg2 - Search window center Y coordinate, percents of frame height.
     SET_SEARCH_WINDOW_POSITION_PERCENTS,
     /// Change tracking rectangle size. Arguments:
     /// arg1 - horizontal size add, pixels.
@@ -280,6 +310,9 @@ enum class VTrackerCommand
 
 /**
  * @brief Video tracker params enum. Params which defines algorithm parameters.
+ *
+ * @note CUSTOM_3 must stay the last value: it is used by
+ * VTracker::decodeCommand(...) to reject unknown param IDs.
  */
 enum class VTrackerParam
 {
@@ -294,19 +327,19 @@ enum class VTrackerParam
     /// tracking algorithm if rectAutoSize == true.
     RECT_HEIGHT,
     /// Option for LOST mode. Parameter that defines the behavior of the
-    /// tracking  algorithm in LOST mode. Default is 0. Possible values:
-    /// 0. In LOST mode, the coordinates of the center of the  tracking
-    ///    rectangle are not updated and remain the  same as before entering
+    /// tracking algorithm in LOST mode. Default is 0. Possible values:
+    /// 0. In LOST mode, the coordinates of the center of the tracking
+    ///    rectangle are not updated and remain the same as before entering
     ///    LOST mode.
-    /// 1. The coordinates of the center of the tracking  rectangle are updated
-    ///    based on the components  of the object’s speed calculated before
-    ///    going into  LOST mode. If the tracking rectangle “touches” the  edge
-    ///    of the video frame, the coordinate updating  for this component
+    /// 1. The coordinates of the center of the tracking rectangle are updated
+    ///    based on the components of the object's speed calculated before
+    ///    going into LOST mode. If the tracking rectangle "touches" the edge
+    ///    of the video frame, the coordinate updating for this component
     ///    (horizontal or vertical) will stop.
-    /// 2. The coordinates of the center of the tracking  rectangle are
-    ///    updated based on the components  of the object’s speed calculated
-    ///    before going into  LOST mode. The tracking is reset if the center of 
-    ///    the tracking rectangle touches any of the edges of  the video frame.
+    /// 2. The coordinates of the center of the tracking rectangle are
+    ///    updated based on the components of the object's speed calculated
+    ///    before going into LOST mode. The tracking is reset if the center of
+    ///    the tracking rectangle touches any of the edges of the video frame.
     LOST_MODE_OPTION,
     /// Size of frame buffer (number of frames to store). Set by user.
     FRAME_BUFFER_SIZE,
@@ -337,6 +370,10 @@ enum class VTrackerParam
 
 /**
  * @brief Video tracker interface class.
+ *
+ * The class defines the interface only. The thread safety of the interface
+ * methods is a requirement for an implementation (see description of each
+ * method).
  */
 class VTracker
 {
@@ -362,27 +399,31 @@ public:
 
     /**
      * @brief Set video tracker param.
+     * @note The implementation must be thread-safe.
      * @param id Param ID.
      * @param value Param value to set.
-     * @return TRUE if param was set of FALSE.
+     * @return TRUE if param was set or FALSE if not.
      */
     virtual bool setParam(VTrackerParam id, float value) = 0;
 
     /**
      * @brief Get video tracker param value.
+     * @note The implementation must be thread-safe.
      * @param id Param ID.
-     * @return Param value or -1.
+     * @return Param value or -1 if the param does not exist.
      */
     virtual float getParam(VTrackerParam id) = 0;
 
     /**
      * @brief Get video tracker params (results).
-     * @return Video tracker params structure.
+     * @note The implementation must be thread-safe.
+     * @param params Video tracker params structure.
      */
     virtual void getParams(VTrackerParams& params) = 0;
 
     /**
      * @brief Execute command.
+     * @note The implementation must be thread-safe.
      * @param id Command ID.
      * @param arg1 First argument. Value depends on command ID.
      * @param arg2 Second argument. Value depends on command ID.
@@ -404,14 +445,16 @@ public:
     /**
      * @brief Get image of internal surfaces.
      * @param type Type of image to get. Depends on implementation.
-     * @param image Pointer to image buffer. Must be 128x128 = 16384 bytes.
+     * @param image Output frame. Pixel format depends on implementation.
      */
     virtual void getImage(int type, cr::video::Frame& image) = 0;
 
     /**
      * @brief Encode set param command.
-     * @param data Pointer to data buffer. Must have size >= 11.
-     * @param size Size of encoded data.
+     * @param data Pointer to data buffer. Must not be nullptr and must have
+     * size >= 11 bytes.
+     * @param size Size of encoded data (11 bytes). Set to 0 if data is
+     * nullptr.
      * @param id Param id.
      * @param value Param value.
      */
@@ -420,8 +463,10 @@ public:
 
     /**
      * @brief Encode command.
-     * @param data Pointer to data buffer. Must have size >= 11.
-     * @param size Size of encoded data.
+     * @param data Pointer to data buffer. Must not be nullptr and must have
+     * size >= 19 bytes.
+     * @param size Size of encoded data (19 bytes). Set to 0 if data is
+     * nullptr.
      * @param id Command ID.
      * @param arg1 First argument. Value depends on command ID.
      * @param arg2 Second argument. Value depends on command ID.
@@ -433,14 +478,20 @@ public:
 
     /**
      * @brief Decode command.
-     * @param data Pointer to command data.
-     * @param size Size of data.
-     * @param paramId Output command ID.
-     * @param commandId Output command ID.
-     * @param value1 Param or command argument 1.
+     *
+     * The method checks the pointer, the size (exactly 11 bytes for set param
+     * command and exactly 19 bytes for command), the version and the ID.
+     * Output values are not changed if the version check fails.
+     *
+     * @param data Pointer to command data. Must not be nullptr.
+     * @param size Size of data, bytes.
+     * @param paramId Output param ID. Set if set param command decoded.
+     * @param commandId Output command ID. Set if command decoded.
+     * @param value1 Param value or command argument 1.
      * @param value2 Command argument 2.
      * @param value3 Command argument 3.
-     * @return 0 - command decoded, 1 - set param command decoded, -1 - error.
+     * @return 0 - command decoded, 1 - set param command decoded, -1 - error
+     * (invalid pointer, size, version, data type or unknown ID).
      */
     static int decodeCommand(uint8_t* data,
                              int size,
@@ -452,11 +503,45 @@ public:
 
     /**
      * @brief Decode and execute command.
+     * @note The implementation must be thread-safe.
      * @param data Pointer to command data.
      * @param size Size of data.
      * @return TRUE if command decoded and executed or FALSE if not.
      */
     virtual bool decodeAndExecuteCommand(uint8_t* data, int size) = 0;
+
+protected:
+
+    /**
+     * @brief Default constructor. The class can be used as a base only.
+     */
+    VTracker() = default;
+
+    /**
+     * @brief Copy constructor.
+     * @param src Source object.
+     */
+    VTracker(const VTracker& src) = default;
+
+    /**
+     * @brief Move constructor.
+     * @param src Source object.
+     */
+    VTracker(VTracker&& src) = default;
+
+    /**
+     * @brief Copy assignment operator.
+     * @param src Source object.
+     * @return Reference to this object.
+     */
+    VTracker& operator= (const VTracker& src) = default;
+
+    /**
+     * @brief Move assignment operator.
+     * @param src Source object.
+     * @return Reference to this object.
+     */
+    VTracker& operator= (VTracker&& src) = default;
 };
 }
 }

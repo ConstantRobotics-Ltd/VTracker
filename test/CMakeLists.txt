@@ -17,6 +17,8 @@ project(VTrackerTest LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Standard C++ only (no compiler extensions)
+set(CMAKE_CXX_EXTENSIONS OFF)
 # creating output directory architecture in accordance with GNU guidelines
 set(BINARY_DIR "${CMAKE_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BINARY_DIR}/bin")
@@ -45,8 +47,45 @@ endif()
 ################################################################################
 target_link_libraries(${PROJECT_NAME} VTracker)
 
+include(CheckCXXCompilerFlag)
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+    # All warnings (as errors), standard conformance, security checks, stack
+    # cookies and control flow guard
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX /permissive- /sdl /GS /guard:cf)
+    # ASLR, DEP and control flow guard for an executable
+    target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT /guard:cf)
 else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wall -Wextra -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion
+        -Wold-style-cast -Wcast-qual -Wformat=2 -Wnon-virtual-dtor
+        -Woverloaded-virtual -Wdouble-promotion -Wimplicit-fallthrough
+        -Wmissing-declarations -Wundef -Wextra-semi
+        -Wzero-as-null-pointer-constant)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(${PROJECT_NAME} PRIVATE -Wdocumentation)
+    endif()
+    if(NOT WIN32)
+        # Stack protector and hardened libc calls (optimized builds only)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fstack-protector-strong
+            "$<$<NOT:$<CONFIG:Debug>>:-U_FORTIFY_SOURCE;-D_FORTIFY_SOURCE=2>")
+        # Stack clash protection and control flow protection (x86 CET or ARM
+        # pointer authentication and branch target identification), if the
+        # compiler supports them for the target
+        set(HARDENING_FLAGS -fstack-clash-protection -fcf-protection=full)
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "^([Aa][Aa][Rr][Cc][Hh]64|[Aa][Rr][Mm])")
+            # Clang on x86 accepts this option in the check but warns on every use
+            list(APPEND HARDENING_FLAGS -mbranch-protection=standard)
+        endif()
+        foreach(FLAG ${HARDENING_FLAGS})
+            string(MAKE_C_IDENTIFIER "HAS${FLAG}" FLAG_VAR)
+            check_cxx_compiler_flag(${FLAG} ${FLAG_VAR})
+            if(${FLAG_VAR})
+                target_compile_options(${PROJECT_NAME} PRIVATE ${FLAG})
+            endif()
+        endforeach()
+    endif()
+    if(UNIX AND NOT APPLE)
+        # Full RELRO and non-executable stack for an executable
+        target_link_options(${PROJECT_NAME} PRIVATE -Wl,-z,relro,-z,now,-z,noexecstack)
+    endif()
 endif()
