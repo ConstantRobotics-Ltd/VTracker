@@ -136,9 +136,7 @@ Figure 2 shows the graph of operation modes. There are the following conditions 
 **VTracker** interface class declared in **VTracker.h** file. Class declaration:
 
 ```cpp
-namespace cr
-{
-namespace vtracker
+namespace rapidpixel
 {
 class VTracker
 {
@@ -169,10 +167,10 @@ public:
                                 float arg3 = 0) = 0;
 
     /// Process frame.
-    virtual bool processFrame(cr::video::Frame& frame) = 0;
+    virtual bool processFrame(rapidpixel::Frame& frame) = 0;
 
     /// Get image of internal surfaces.
-    virtual void getImage(int type, cr::video::Frame& image) = 0;
+    virtual void getImage(int type, rapidpixel::Frame& image) = 0;
 
     /// Encode set param command.
     static void encodeSetParamCommand(
@@ -212,7 +210,6 @@ protected:
     /// Move assignment operator.
     VTracker& operator= (VTracker&& src) = default;
 };
-}
 }
 ```
 
@@ -329,7 +326,7 @@ virtual bool executeCommand(VTrackerCommand id, float arg1 = 0, float arg2 = 0, 
 The **processFrame(...)** method processes video frame. Method declaration:
 
 ```cpp
-virtual bool processFrame(cr::video::Frame& frame) = 0;
+virtual bool processFrame(rapidpixel::Frame& frame) = 0;
 ```
 
 | Parameter | Description                                                  |
@@ -345,7 +342,7 @@ virtual bool processFrame(cr::video::Frame& frame) = 0;
 The **getImage(...)** method designed to obtain images of internal matrixes. Depends on implementation. Method declaration:
 
 ```cpp
-virtual void getImage(int type, cr::video::Frame& image) = 0;
+virtual void getImage(int type, rapidpixel::Frame& image) = 0;
 ```
 
 | Parameter | Description                                                  |
@@ -988,7 +985,7 @@ in.rectX = rand() % 255;
 in.rectY = rand() % 255;
 
 // Write parameters to the file.
-cr::utils::ConfigReader inConfig;
+rapidpixel::ConfigReader inConfig;
 if (!inConfig.set(in, "VTrackerParams") ||
     !inConfig.writeToFile("VTrackerParams.json"))
 {
@@ -997,7 +994,7 @@ if (!inConfig.set(in, "VTrackerParams") ||
 }
 
 // Read parameters from the file.
-cr::utils::ConfigReader outConfig;
+rapidpixel::ConfigReader outConfig;
 if(!outConfig.readFromFile("VTrackerParams.json"))
 {
     std::cout << "Can't open config file" << std::endl;
@@ -1257,10 +1254,10 @@ public:
                         float arg3 = 0) override;
 
     /// Process frame.
-    bool processFrame(cr::video::Frame& frame) override;
+    bool processFrame(rapidpixel::Frame& frame) override;
 
     /// Get image of internal surfaces.
-    void getImage(int type, cr::video::Frame& image) override;
+    void getImage(int type, rapidpixel::Frame& image) override;
 
     /// Decode and execute command.
     bool decodeAndExecuteCommand(uint8_t* data, int size) override;

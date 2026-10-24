@@ -91,7 +91,7 @@ struct FieldRef
 /// Get the table of VTrackerParams fields in the order they are stored in the
 /// encoded data (the same order as the bits of the mask).
 std::array<FieldRef, FIELDS_NUMBER> makeFieldTable(
-        cr::vtracker::VTrackerParams& p)
+        rapidpixel::VTrackerParams& p)
 {
     return {{
         {&p.mode, VALUE_SIZE},
@@ -135,7 +135,7 @@ std::array<FieldRef, FIELDS_NUMBER> makeFieldTable(
 
 /// Get the table of mask flags in the same order as makeFieldTable(...).
 std::array<const bool*, FIELDS_NUMBER> makeFlagTable(
-        const cr::vtracker::VTrackerParamsMask& m)
+        const rapidpixel::VTrackerParamsMask& m)
 {
     return {{
         &m.mode,
@@ -194,23 +194,23 @@ constexpr int maskBit(int fieldIndex)
 
 
 
-cr::vtracker::VTracker::~VTracker()
+rapidpixel::VTracker::~VTracker()
 {
 
 }
 
 
 
-std::string cr::vtracker::VTracker::getVersion()
+std::string rapidpixel::VTracker::getVersion()
 {
     return VTRACKER_VERSION;
 }
 
 
 
-bool cr::vtracker::VTrackerParams::encode(
+bool rapidpixel::VTrackerParams::encode(
         uint8_t* data, int bufferSize,
-        int& size, cr::vtracker::VTrackerParamsMask* mask)
+        int& size, rapidpixel::VTrackerParamsMask* mask)
 {
     // Check the buffer: it must be able to hold all fields, so the output
     // never depends on the mask and cannot overflow the buffer.
@@ -226,7 +226,7 @@ bool cr::vtracker::VTrackerParams::encode(
     data[2] = static_cast<uint8_t>(VTRACKER_MINOR_VERSION);
 
     // Prepare mask. Without the mask all bits (including unused) are set.
-    const cr::vtracker::VTrackerParamsMask allFields;
+    const rapidpixel::VTrackerParamsMask allFields;
     const auto flags = makeFlagTable(mask != nullptr ? *mask : allFields);
     for (int i = 0; i < PARAMS_MASK_SIZE; ++i)
     {
@@ -273,7 +273,7 @@ bool cr::vtracker::VTrackerParams::encode(
 
 
 
-bool cr::vtracker::VTrackerParams::decode(uint8_t* data, int dataSize)
+bool rapidpixel::VTrackerParams::decode(uint8_t* data, int dataSize)
 {
     // Check data size (header must be complete) and header.
     if (data == nullptr || dataSize < PARAMS_HEADER_SIZE)
@@ -329,8 +329,8 @@ bool cr::vtracker::VTrackerParams::decode(uint8_t* data, int dataSize)
 
 
 
-void cr::vtracker::VTracker::encodeSetParamCommand(
-        uint8_t* data, int& size, cr::vtracker::VTrackerParam id, float value)
+void rapidpixel::VTracker::encodeSetParamCommand(
+        uint8_t* data, int& size, rapidpixel::VTrackerParam id, float value)
 {
     // Check the buffer pointer.
     size = 0;
@@ -353,7 +353,7 @@ void cr::vtracker::VTracker::encodeSetParamCommand(
 
 
 
-void cr::vtracker::VTracker::encodeCommand(
+void rapidpixel::VTracker::encodeCommand(
         uint8_t* data, int& size, VTrackerCommand id,
         float arg1, float arg2, float arg3)
 {
@@ -380,7 +380,7 @@ void cr::vtracker::VTracker::encodeCommand(
 
 
 
-int cr::vtracker::VTracker::decodeCommand(
+int rapidpixel::VTracker::decodeCommand(
                             uint8_t* data,
                             int size,
                             VTrackerParam& paramId,

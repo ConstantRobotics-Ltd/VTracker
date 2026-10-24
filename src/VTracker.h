@@ -6,9 +6,7 @@
 
 
 
-namespace cr
-{
-namespace vtracker
+namespace rapidpixel
 {
 /**
  * @brief Mask structure for video tracker params.
@@ -440,14 +438,14 @@ public:
      * @param frame Source video frame.
      * @return TRUE if video frame was processed or FALSE if not.
      */
-    virtual bool processFrame(cr::video::Frame& frame) = 0;
+    virtual bool processFrame(rapidpixel::Frame& frame) = 0;
 
     /**
      * @brief Get image of internal surfaces.
      * @param type Type of image to get. Depends on implementation.
      * @param image Output frame. Pixel format depends on implementation.
      */
-    virtual void getImage(int type, cr::video::Frame& image) = 0;
+    virtual void getImage(int type, rapidpixel::Frame& image) = 0;
 
     /**
      * @brief Encode set param command.
@@ -543,5 +541,16 @@ protected:
      */
     VTracker& operator= (VTracker&& src) = default;
 };
+}
+
+
+
+// Compatibility: the names of namespace rapidpixel are also available in
+// namespace cr::vtracker.
+namespace cr
+{
+namespace vtracker
+{
+using namespace ::rapidpixel;
 }
 }

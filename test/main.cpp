@@ -64,7 +64,7 @@ bool randomBool()
 
 
 /// Fill all fields of params by random values.
-void randomize(cr::vtracker::VTrackerParams& p)
+void randomize(rapidpixel::VTrackerParams& p)
 {
     p.mode = randomInt(255);
     p.rectX = randomInt(255);
@@ -105,7 +105,7 @@ void randomize(cr::vtracker::VTrackerParams& p)
 
 
 /// Fill all flags of the mask by random values.
-void randomize(cr::vtracker::VTrackerParamsMask& m)
+void randomize(rapidpixel::VTrackerParamsMask& m)
 {
     m.mode = randomBool();
     m.rectX = randomBool();
@@ -146,7 +146,7 @@ void randomize(cr::vtracker::VTrackerParamsMask& m)
 
 
 /// Set all flags of the mask.
-void setAll(cr::vtracker::VTrackerParamsMask& m, bool value)
+void setAll(rapidpixel::VTrackerParamsMask& m, bool value)
 {
     m.mode = value;
     m.rectX = value;
@@ -187,7 +187,7 @@ void setAll(cr::vtracker::VTrackerParamsMask& m, bool value)
 
 
 /// Expected size of encoded params for the mask, bytes.
-int expectedSize(const cr::vtracker::VTrackerParamsMask& m)
+int expectedSize(const rapidpixel::VTrackerParamsMask& m)
 {
     const bool values[] = {
         m.mode, m.rectX, m.rectY, m.rectWidth, m.rectHeight, m.objectX,
@@ -255,9 +255,9 @@ void checkField(const char* name, T in, T out, bool selected, int& errors)
 
 /// Compare all fields of params. Fields which are not selected by the mask
 /// must be zero in the output params.
-bool compareParams(const cr::vtracker::VTrackerParams& in,
-                   const cr::vtracker::VTrackerParams& out,
-                   const cr::vtracker::VTrackerParamsMask& m)
+bool compareParams(const rapidpixel::VTrackerParams& in,
+                   const rapidpixel::VTrackerParams& out,
+                   const rapidpixel::VTrackerParamsMask& m)
 {
     int errors = 0;
     checkField("mode", in.mode, out.mode, m.mode, errors);
@@ -322,8 +322,8 @@ bool compareParams(const cr::vtracker::VTrackerParams& in,
 
 
 /// Compare the fields which are stored in JSON files.
-bool compareJsonFields(const cr::vtracker::VTrackerParams& in,
-                       const cr::vtracker::VTrackerParams& out)
+bool compareJsonFields(const rapidpixel::VTrackerParams& in,
+                       const rapidpixel::VTrackerParams& out)
 {
     int errors = 0;
     checkField("rectWidth", in.rectWidth, out.rectWidth, true, errors);
@@ -391,17 +391,17 @@ private:
 bool copyTest()
 {
     // Prepare random params.
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
-    const cr::vtracker::VTrackerParamsMask all;
+    const rapidpixel::VTrackerParamsMask all;
 
     // Copy params (constructor and assignment).
-    const cr::vtracker::VTrackerParams out = in;
+    const rapidpixel::VTrackerParams out = in;
     if (!compareParams(in, out, all))
     {
         return fail("Copy constructor error");
     }
-    cr::vtracker::VTrackerParams assigned;
+    rapidpixel::VTrackerParams assigned;
     assigned = in;
     if (!compareParams(in, assigned, all))
     {
@@ -409,7 +409,7 @@ bool copyTest()
     }
 
     // Self assignment must not change the object.
-    const cr::vtracker::VTrackerParams& self = assigned;
+    const rapidpixel::VTrackerParams& self = assigned;
     assigned = self;
     if (!compareParams(in, assigned, all))
     {
@@ -425,7 +425,7 @@ bool copyTest()
 bool encodeDecodeTest()
 {
     // Prepare random params.
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
 
     // Encode data.
@@ -443,7 +443,7 @@ bool encodeDecodeTest()
 
     // Decode data into params filled by other values: all fields must be
     // overwritten.
-    cr::vtracker::VTrackerParams out;
+    rapidpixel::VTrackerParams out;
     randomize(out);
     if (!out.decode(data, size))
     {
@@ -451,7 +451,7 @@ bool encodeDecodeTest()
     }
 
     // Compare params.
-    const cr::vtracker::VTrackerParamsMask all;
+    const rapidpixel::VTrackerParamsMask all;
     return compareParams(in, out, all);
 }
 
@@ -461,11 +461,11 @@ bool encodeDecodeTest()
 bool encodeDecodeWithMaskTest()
 {
     // Prepare random params.
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
 
     // Prepare mask (every second parameter).
-    cr::vtracker::VTrackerParamsMask mask;
+    rapidpixel::VTrackerParamsMask mask;
     setAll(mask, false);
     mask.mode = true;
     mask.rectY = true;
@@ -499,7 +499,7 @@ bool encodeDecodeWithMaskTest()
     }
 
     // Decode data. Fields not selected by the mask must be zero.
-    cr::vtracker::VTrackerParams out;
+    rapidpixel::VTrackerParams out;
     if (!out.decode(data, size))
     {
         return fail("Can't decode data");
@@ -533,7 +533,7 @@ bool encodeDecodeWithMaskTest()
 /// Encode params arguments test (buffer size, null pointer, mask bits).
 bool encodeArgumentsTest()
 {
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
     uint8_t data[PARAMS_MAX_SIZE + 8];
     std::memset(data, 0xA5, sizeof(data));
@@ -592,7 +592,7 @@ bool encodeArgumentsTest()
     }
 
     // All flags are set: the unused mask bits are zero.
-    cr::vtracker::VTrackerParamsMask mask;
+    rapidpixel::VTrackerParamsMask mask;
     if (!in.encode(data, PARAMS_MAX_SIZE, size, &mask) ||
         size != PARAMS_MAX_SIZE || data[3] != 0xFF || data[4] != 0xFF ||
         data[5] != 0xFF || data[6] != 0xFF || data[7] != 0xC0)
@@ -607,7 +607,7 @@ bool encodeArgumentsTest()
     {
         return fail("Wrong size with no flags");
     }
-    cr::vtracker::VTrackerParams out;
+    rapidpixel::VTrackerParams out;
     randomize(out);
     if (!out.decode(data, size) || !compareParams(in, out, mask))
     {
@@ -623,7 +623,7 @@ bool encodeArgumentsTest()
 /// the object must not be changed.
 bool decodeInvalidDataTest()
 {
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
     uint8_t data[1024];
     int size = 0;
@@ -632,12 +632,12 @@ bool decodeInvalidDataTest()
         return fail("Can't encode data");
     }
 
-    cr::vtracker::VTrackerParams sentinel;
+    rapidpixel::VTrackerParams sentinel;
     randomize(sentinel);
-    const cr::vtracker::VTrackerParamsMask all;
+    const rapidpixel::VTrackerParamsMask all;
 
     // Null pointer, invalid sizes.
-    cr::vtracker::VTrackerParams out = sentinel;
+    rapidpixel::VTrackerParams out = sentinel;
     if (out.decode(nullptr, size) || out.decode(data, -1) ||
         out.decode(data, 0) || out.decode(data, PARAMS_HEADER_SIZE - 1) ||
         out.decode(data, std::numeric_limits<int>::min()))
@@ -719,8 +719,8 @@ bool decodeInvalidDataTest()
 /// the result must be deterministic.
 bool corruptionTest()
 {
-    cr::vtracker::VTrackerParams in;
-    cr::vtracker::VTrackerParamsMask mask;
+    rapidpixel::VTrackerParams in;
+    rapidpixel::VTrackerParamsMask mask;
     uint8_t data[1024];
     int accepted = 0;
     int rejected = 0;
@@ -742,8 +742,8 @@ bool corruptionTest()
         }
         const int dataSize = randomInt(PARAMS_MAX_SIZE + 10);
 
-        cr::vtracker::VTrackerParams first;
-        cr::vtracker::VTrackerParams second;
+        rapidpixel::VTrackerParams first;
+        rapidpixel::VTrackerParams second;
         const bool firstResult = first.decode(data, dataSize);
         const bool secondResult = second.decode(data, dataSize);
         if (firstResult != secondResult)
@@ -752,7 +752,7 @@ bool corruptionTest()
         }
         if (firstResult)
         {
-            const cr::vtracker::VTrackerParamsMask all;
+            const rapidpixel::VTrackerParamsMask all;
             if (!compareParams(first, second, all))
             {
                 return fail("Not deterministic params");
@@ -777,10 +777,10 @@ bool encodeDecodeCommandsTest()
 {
     uint8_t data[1024];
     int size = 0;
-    cr::vtracker::VTrackerCommand commandId =
-            cr::vtracker::VTrackerCommand::RESET;
-    cr::vtracker::VTrackerParam paramId =
-            cr::vtracker::VTrackerParam::TYPE;
+    rapidpixel::VTrackerCommand commandId =
+            rapidpixel::VTrackerCommand::RESET;
+    rapidpixel::VTrackerParam paramId =
+            rapidpixel::VTrackerParam::TYPE;
 
     // Commands.
     for (int id = FIRST_COMMAND_ID; id <= LAST_COMMAND_ID; ++id)
@@ -788,8 +788,8 @@ bool encodeDecodeCommandsTest()
         const float arg1 = randomFloat(20);
         const float arg2 = randomFloat(20);
         const float arg3 = randomFloat(20);
-        cr::vtracker::VTracker::encodeCommand(
-                    data, size, static_cast<cr::vtracker::VTrackerCommand>(id),
+        rapidpixel::VTracker::encodeCommand(
+                    data, size, static_cast<rapidpixel::VTrackerCommand>(id),
                     arg1, arg2, arg3);
         if (size != COMMAND_SIZE || data[0] != 0x00)
         {
@@ -799,7 +799,7 @@ bool encodeDecodeCommandsTest()
         float in1 = -1.0f;
         float in2 = -1.0f;
         float in3 = -1.0f;
-        if (cr::vtracker::VTracker::decodeCommand(
+        if (rapidpixel::VTracker::decodeCommand(
                     data, size, paramId, commandId, in1, in2, in3) != 0)
         {
             return fail("Command not decoded");
@@ -815,8 +815,8 @@ bool encodeDecodeCommandsTest()
     for (int id = FIRST_PARAM_ID; id <= LAST_PARAM_ID; ++id)
     {
         const float value = randomFloat(20);
-        cr::vtracker::VTracker::encodeSetParamCommand(
-                    data, size, static_cast<cr::vtracker::VTrackerParam>(id),
+        rapidpixel::VTracker::encodeSetParamCommand(
+                    data, size, static_cast<rapidpixel::VTrackerParam>(id),
                     value);
         if (size != SET_PARAM_COMMAND_SIZE || data[0] != 0x01)
         {
@@ -826,7 +826,7 @@ bool encodeDecodeCommandsTest()
         float in1 = -1.0f;
         float in2 = -1.0f;
         float in3 = -1.0f;
-        if (cr::vtracker::VTracker::decodeCommand(
+        if (rapidpixel::VTracker::decodeCommand(
                     data, size, paramId, commandId, in1, in2, in3) != 1)
         {
             return fail("Set param command not decoded");
@@ -847,25 +847,25 @@ bool decodeCommandInvalidDataTest()
 {
     uint8_t data[1024];
     int size = 0;
-    cr::vtracker::VTrackerCommand commandId =
-            cr::vtracker::VTrackerCommand::SET_LOST_MODE;
-    cr::vtracker::VTrackerParam paramId =
-            cr::vtracker::VTrackerParam::CUSTOM_1;
+    rapidpixel::VTrackerCommand commandId =
+            rapidpixel::VTrackerCommand::SET_LOST_MODE;
+    rapidpixel::VTrackerParam paramId =
+            rapidpixel::VTrackerParam::CUSTOM_1;
     float value1 = 0.0f;
     float value2 = 0.0f;
     float value3 = 0.0f;
-    using cr::vtracker::VTracker;
+    using rapidpixel::VTracker;
 
     // Null pointers.
     size = 777;
-    VTracker::encodeCommand(nullptr, size, cr::vtracker::VTrackerCommand::RESET);
+    VTracker::encodeCommand(nullptr, size, rapidpixel::VTrackerCommand::RESET);
     if (size != 0)
     {
         return fail("Size not reset by encodeCommand(nullptr)");
     }
     size = 777;
     VTracker::encodeSetParamCommand(
-                nullptr, size, cr::vtracker::VTrackerParam::TYPE, 1.0f);
+                nullptr, size, rapidpixel::VTrackerParam::TYPE, 1.0f);
     if (size != 0)
     {
         return fail("Size not reset by encodeSetParamCommand(nullptr)");
@@ -877,7 +877,7 @@ bool decodeCommandInvalidDataTest()
     }
 
     // Wrong sizes of a command.
-    VTracker::encodeCommand(data, size, cr::vtracker::VTrackerCommand::CAPTURE,
+    VTracker::encodeCommand(data, size, rapidpixel::VTrackerCommand::CAPTURE,
                             1.0f, 2.0f, 3.0f);
     for (const int wrong : {std::numeric_limits<int>::min(), -1, 0, 1, 10, 11, 12,
                       18, 20, 100, std::numeric_limits<int>::max()})
@@ -891,7 +891,7 @@ bool decodeCommandInvalidDataTest()
 
     // Wrong sizes of a set param command.
     VTracker::encodeSetParamCommand(
-                data, size, cr::vtracker::VTrackerParam::TYPE, 1.0f);
+                data, size, rapidpixel::VTrackerParam::TYPE, 1.0f);
     for (const int wrong : {std::numeric_limits<int>::min(), -1, 0, 1, 10, 12, 18,
                       19, 100, std::numeric_limits<int>::max()})
     {
@@ -903,7 +903,7 @@ bool decodeCommandInvalidDataTest()
     }
 
     // Wrong version and data type.
-    VTracker::encodeCommand(data, size, cr::vtracker::VTrackerCommand::CAPTURE,
+    VTracker::encodeCommand(data, size, rapidpixel::VTrackerCommand::CAPTURE,
                             1.0f, 2.0f, 3.0f);
     data[1] = static_cast<uint8_t>(data[1] + 1);
     if (VTracker::decodeCommand(data, size, paramId, commandId, value1,
@@ -930,21 +930,21 @@ bool decodeCommandInvalidDataTest()
     }
 
     // Unknown IDs: outputs for IDs must stay unchanged.
-    commandId = cr::vtracker::VTrackerCommand::SET_LOST_MODE;
-    paramId = cr::vtracker::VTrackerParam::CUSTOM_1;
+    commandId = rapidpixel::VTrackerCommand::SET_LOST_MODE;
+    paramId = rapidpixel::VTrackerParam::CUSTOM_1;
     const int wrongIds[] = {std::numeric_limits<int>::min(), -1, 0,
                             LAST_COMMAND_ID + 1, 77, 0x7FFFFFFF};
     for (const int id : wrongIds)
     {
         VTracker::encodeCommand(
-                    data, size, static_cast<cr::vtracker::VTrackerCommand>(id));
+                    data, size, static_cast<rapidpixel::VTrackerCommand>(id));
         if (VTracker::decodeCommand(data, size, paramId, commandId, value1,
                                     value2, value3) != -1)
         {
             return fail("Unknown command ID accepted");
         }
         VTracker::encodeSetParamCommand(
-                    data, size, static_cast<cr::vtracker::VTrackerParam>(id),
+                    data, size, static_cast<rapidpixel::VTrackerParam>(id),
                     1.0f);
         if (VTracker::decodeCommand(data, size, paramId, commandId, value1,
                                     value2, value3) != -1)
@@ -952,8 +952,8 @@ bool decodeCommandInvalidDataTest()
             return fail("Unknown param ID accepted");
         }
     }
-    if (commandId != cr::vtracker::VTrackerCommand::SET_LOST_MODE ||
-        paramId != cr::vtracker::VTrackerParam::CUSTOM_1)
+    if (commandId != rapidpixel::VTrackerCommand::SET_LOST_MODE ||
+        paramId != rapidpixel::VTrackerParam::CUSTOM_1)
     {
         return fail("Output IDs changed after rejected decode");
     }
@@ -969,9 +969,9 @@ bool versionTest()
     const std::string expected = std::to_string(VTRACKER_MAJOR_VERSION) + "." +
                                  std::to_string(VTRACKER_MINOR_VERSION) + "." +
                                  std::to_string(VTRACKER_PATCH_VERSION);
-    std::cout << "Version: " << cr::vtracker::VTracker::getVersion()
+    std::cout << "Version: " << rapidpixel::VTracker::getVersion()
               << std::endl;
-    return cr::vtracker::VTracker::getVersion() == expected;
+    return rapidpixel::VTracker::getVersion() == expected;
 }
 
 
@@ -980,12 +980,12 @@ bool versionTest()
 bool jsonReadWriteTest()
 {
     // Prepare random params.
-    cr::vtracker::VTrackerParams in;
+    rapidpixel::VTrackerParams in;
     randomize(in);
 
     // Write params to file.
     const FileRemover remover(JSON_FILE_NAME);
-    cr::utils::ConfigReader inConfig;
+    rapidpixel::ConfigReader inConfig;
     if (!inConfig.set(in, "VTrackerParams"))
     {
         return fail("Can't set params to config");
@@ -996,12 +996,12 @@ bool jsonReadWriteTest()
     }
 
     // Read params from file.
-    cr::utils::ConfigReader outConfig;
+    rapidpixel::ConfigReader outConfig;
     if (!outConfig.readFromFile(JSON_FILE_NAME))
     {
         return fail("Can't open config file");
     }
-    cr::vtracker::VTrackerParams out;
+    rapidpixel::VTrackerParams out;
     if (!outConfig.get(out, "VTrackerParams"))
     {
         return fail("Can't read params from file");
@@ -1035,8 +1035,8 @@ bool jsonInvalidDataTest()
     for (const char* document : documents)
     {
         // The results depend on the document, the calls must be safe.
-        cr::utils::ConfigReader config;
-        cr::vtracker::VTrackerParams params;
+        rapidpixel::ConfigReader config;
+        rapidpixel::VTrackerParams params;
         if (config.readFromString(document))
         {
             ++parsed;
@@ -1051,15 +1051,15 @@ bool jsonInvalidDataTest()
 
     // A document with missing fields must be rejected and the params must not
     // be changed.
-    cr::utils::ConfigReader config;
+    rapidpixel::ConfigReader config;
     if (!config.readFromString(
                 "{\"VTrackerParams\": {\"rectWidth\": 33, \"rectHeight\": 44}}"))
     {
         return fail("Can't read valid JSON string");
     }
-    cr::vtracker::VTrackerParams sentinel;
+    rapidpixel::VTrackerParams sentinel;
     randomize(sentinel);
-    cr::vtracker::VTrackerParams params = sentinel;
+    rapidpixel::VTrackerParams params = sentinel;
     if (config.get(params, "VTrackerParams"))
     {
         return fail("Document with missing fields accepted");
@@ -1070,15 +1070,15 @@ bool jsonInvalidDataTest()
     }
 
     // Round trip through JSON string.
-    cr::utils::ConfigReader inConfig;
+    rapidpixel::ConfigReader inConfig;
     std::string json;
     if (!inConfig.set(sentinel, "VTrackerParams") ||
         !inConfig.writeToString(json))
     {
         return fail("Can't write JSON string");
     }
-    cr::utils::ConfigReader outConfig;
-    cr::vtracker::VTrackerParams out;
+    rapidpixel::ConfigReader outConfig;
+    rapidpixel::VTrackerParams out;
     if (!outConfig.readFromString(json) ||
         !outConfig.get(out, "VTrackerParams"))
     {

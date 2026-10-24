@@ -6,9 +6,7 @@
 
 
 
-namespace cr
-{
-namespace vtracker
+namespace rapidpixel
 {
 /**
  * @brief Custom video tracker class. Example of VTracker interface
@@ -107,14 +105,14 @@ public:
      * @param frame Source video frame.
      * @return TRUE if the frame was processed.
      */
-    bool processFrame(cr::video::Frame& frame) override;
+    bool processFrame(rapidpixel::Frame& frame) override;
 
     /**
      * @brief Get image of internal surfaces.
      * @param type Type of image to get.
      * @param image Output frame.
      */
-    void getImage(int type, cr::video::Frame& image) override;
+    void getImage(int type, rapidpixel::Frame& image) override;
 
     /**
      * @brief Decode and execute command.
@@ -131,5 +129,4 @@ private:
     /// Mutex to protect m_params.
     std::mutex m_paramsMutex;
 };
-}
 }
