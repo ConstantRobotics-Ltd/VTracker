@@ -331,7 +331,7 @@ virtual bool processFrame(rapidpixel::Frame& frame) = 0;
 
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
-| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUYV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Video trackers should implement all RAW pixel format listed above. |
+| frame     | Video frame for processing. Video tracker processes only RAW pixel formats (BGR24, RGB24, GRAY, YUV24, YUYV, UYVY, NV12, NV21, YV12, YU12, see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Video trackers should implement all RAW pixel format listed above. |
 
 **Returns:** TRUE is the video frame was processed FALSE if not. If video tracker not in tracking mode the method should return TRUE.
 
@@ -348,7 +348,7 @@ virtual void getImage(int type, rapidpixel::Frame& image) = 0;
 | Parameter | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | type      | Image type. Depends on implementation.                       |
-| frame     | Output frame (see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Pixel format depends on implementation. |
+| image     | Output frame (see [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class description). Pixel format depends on implementation. |
 
 
 
@@ -941,7 +941,7 @@ bool decode(uint8_t* data, int dataSize);
 | data      | Pointer to encoded data buffer. Must not be nullptr.         |
 | dataSize  | Size of the encoded data, bytes. Bytes after the last decoded field are ignored. |
 
-**Returns:** TRUE if data decoded (deserialized) or FALSE if not (null pointer, data shorter than the header or than the fields selected by the mask, wrong data type or wrong version). If the method returns FALSE the object is not changed. Fields which are not selected by the mask are set to 0 (false for boolean fields). Any non zero byte of a boolean field is decoded as true. The method does not check the values of the fields (for example, **frameBufferSize** can be negative or very large): the video tracker must validate the values before use (see [Limits and guarantees](#limits-and-guarantees)).
+**Returns:** TRUE if data decoded (deserialized) or FALSE if not (null pointer, data shorter than the header or than the fields selected by the mask, wrong data type or wrong version). If the method returns FALSE the object is not changed. Fields which are not selected by the mask are set to 0 (false for boolean fields). Any non zero byte of a boolean field is decoded as true. The method does not check the values of the fields (for example, **frameBufferSize** can be negative or very large): the video tracker must validate the values before use (see [How to make custom implementation](#how-to-make-custom-implementation)).
 
 Example:
 
@@ -1034,7 +1034,7 @@ if(!outConfig.get(out, "VTrackerParams"))
 }
 ```
 
-Only the fields listed in the **JSON_READABLE** macro of [VTrackerParams class](#vtrackerparams-class-description) are stored in the file (the fields calculated by the video tracker are not stored). All these fields are required: if the file is not a valid JSON document, if the object is missing, if any field is missing or if a value can not be converted to the type of the field (a string, null, an array or an integer outside of the range of int), the **get(...)** method of **ConfigReader** returns FALSE and the params object is not changed. Numbers are converted to the type of the field (a fractional number is truncated for an integer field, any non zero number is true for a boolean field). The values are not checked against any range (for example, **frameBufferSize** can be negative or very large): the video tracker must validate the values before use (see [Limits and guarantees](#limits-and-guarantees)).
+Only the fields listed in the **JSON_READABLE** macro of [VTrackerParams class](#vtrackerparams-class-description) are stored in the file (the fields calculated by the video tracker are not stored). All these fields are required: if the file is not a valid JSON document, if the object is missing, if any field is missing or if a value can not be converted to the type of the field (a string, null, an array or an integer outside of the range of int), the **get(...)** method of **ConfigReader** returns FALSE and the params object is not changed. Numbers are converted to the type of the field (a fractional number is truncated for an integer field, any non zero number is true for a boolean field). The values are not checked against any range (for example, **frameBufferSize** can be negative or very large): the video tracker must validate the values before use (see [How to make custom implementation](#how-to-make-custom-implementation)).
 
 
 
