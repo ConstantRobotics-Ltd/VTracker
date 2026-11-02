@@ -50,6 +50,8 @@
 
 **VTracker** C++ library provides standard interface as well defines data structures and rules for different video trackers. **VTracker** interface class does nothing, just provides interface, defines data structures and provides methods to encode/decode commands and encode/decode params. Different video trackers inherit interface form **VTracker** C++ class. **VTracker.h** file contains list of data structures ([VTrackerCommand enum](#vtrackercommand-enum), [VTrackerParam enum](#vtrackerparam-enum) and [VTrackerParams class](#vtrackerparams-class-description)) and **VTracker** class declaration. [VTrackerParams class](#vtrackerparams-class-description) contains video tracker params and includes methods to encode and decode params. [VTrackerCommand enum](#vtrackercommand-enum) contains IDs of commands. [VTrackerParam enum](#vtrackerparam-enum) contains IDs of params. All video trackers should include params and commands listed in **VTracker.h** file. **VTracker** interface class depends on [Frame](https://rapidpixel.constantrobotics.com/docs/Service/Frame.html) class (describes video frame and video frame data structures) and [ConfigReader](https://rapidpixel.constantrobotics.com/docs/Service/ConfigReader.html) library (provides methods to read/write JSON config files). The source code of these libraries is not included in the **VTracker** repository: the repositories must be placed in the same folder as the **VTracker** repository (see [Build and connect to your project](#build-and-connect-to-your-project) section). It uses C++17 standard.
 
+**VTracker** is general-purpose software: it is not tied to any sector or application, and the developer of a program decides what the program does with it.
+
 
 
 # Versions
